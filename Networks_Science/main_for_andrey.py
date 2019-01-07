@@ -1,6 +1,9 @@
-from calc import main
+import sys
+from calc_for_andrey import main
 # cd Documents\Python_Scripts\Networks_Science
 
+
+args = sys.argv
 
 if args[1] == '0':
     main(args[1], args[2], args[3], args[4], args[5], args[6])

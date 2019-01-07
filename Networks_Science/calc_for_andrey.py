@@ -419,29 +419,49 @@ def dfs_mnrk_paths_telecom_nets(graph, inc_nodes, k, start, goal, m, dec_nodes =
 
 
 
-def main(type, a1, a2, a3, a4, a5 = '', a6 = '', a7 = '', a8 = '', a9 = '', a9 = ''):
-
-# (type, digraph, digraph_name, inc_nodes, dec_nodes, k, path, time, mass, ipos)
-# a1 is digraph name
-digraph = extract(a1)
+def main(type, a1, a2, a3, a4, a5 = '', a6 = '', a7 = '', a8 = '', a9 = ''):
+    # (type, digraph, digraph_name, inc_nodes, dec_nodes, k, path, time, mass, ipos)
+    # a1 is digraph name
+    digraph = extract(a1)
 
 
     if type == '0':
+        a5 = int(a5)
         paths = list(dfs_paths(graph = digraph, start = a3, goal = a4))
         drawing_module.draw_graph0(digraph = digraph, digraph_name = a2, paths = paths, ipos = a5) # (digraph, digraph_name, paths, ipos)
 
     elif type == '1':
+        a3 = int(a3)
+        a4 = int(a4)
+        a7 = int(a7)
+        (shit1, a3, shit2) = choose(incrementation_nodes_N = a3)
         paths = list(dfs_vmrk_paths(graph = digraph, inc_nodes = a3, k = a4, start = a5, goal = a6))
         drawing_module.draw_graph1(digraph = digraph, digraph_name = a2, inc_nodes = a3, k = a4, paths = paths, ipos = a7) # (digraph, digraph_name, inc_nodes, k, paths, ipos)
 
     elif type == '2':
+        a3 = int(a3)
+        a4 = int(a4)
+        a7 = int(a7)
+        a8 = int(a8)
+        (shit1, a3, shit2) = choose(incrementation_nodes_N = a3)
         path = dfs_vmrk_paths_telecom_nets(graph = digraph, inc_nodes = a3, k = a4, start = a5, goal = a6)
         drawing_module.draw_graph2(digraph = digraph, digraph_name = a2, inc_nodes = a3, k = a4, path = path[0], time = path[1], mass = a7, ipos = a8) # (digraph, digraph_name, inc_nodes, k, path, time, mass, ipos)
 
     elif type == '3':
+        a3 = int(a3)
+        a4 = int(a4)
+        a5 = int(a5)
+        a8 = int(a8)
+        (shit1, a3, a4) = choose(incrementation_nodes_N = a3, decrementation_nodes_N = a4)
         paths = list(dfs_mnrk_paths(graph = digraph, icnc_nodes = a3, dec_nodes = a4, k = a5, start = a6, goal = a7))
         drawing_module.draw_graph3(digraph = digraph, digraph_name = a2, inc_nodes = a3, dec_nodes = a4, k = a5, paths = paths, ipos = a8) # (digraph, digraph_name, inc_nodes, dec_nodes, k, paths, ipos)
 
     elif type == '4':
+        a3 = int(a3)
+        a4 = int(a4)
+        a5 = int(a5)
+        a8 = int(a8)
+        a9 = int(a9)
+        (shit1, a3, a4) = choose(incrementation_nodes_N = a3, decrementation_nodes_N = a4)
         path = dfs_mnrk_paths_telecom_nets(graph = digraph, inc_nodes = a3, dec_nodes = a4, k = a5, start = a6, goal = a7, m = a8)
         drawing_module.draw_graph4(digraph = digraph, digraph_name = a2, inc_nodes = a3, dec_nodes = a4, k = path[2], path = path[0], time = path[1], mass = a8, ipos = a9) # (digraph, digraph_name, inc_nodes, dec_nodes, k, path, time, mass, ipos)
