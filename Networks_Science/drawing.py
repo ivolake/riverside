@@ -194,7 +194,7 @@ def draw_graph0(digraph, digraph_name, paths, ipos): # Standart reachability in 
     # fig.savefig() сохраняет, понятное дело
 
     fig.savefig(os.getcwd() + '/output/{}.png'.format(digraph_name))
-    plt.show()
+    plt.close()
 
 def draw_graph1(digraph, digraph_name, inc_nodes, k, paths, ipos): # Vertrex Mixed Reachability with degree of k
     '''
@@ -263,7 +263,6 @@ def draw_graph1(digraph, digraph_name, inc_nodes, k, paths, ipos): # Vertrex Mix
     # fig.savefig() сохраняет, понятное дело
 
     fig.savefig(os.getcwd() + '/output/{}.png'.format(digraph_name))
-    plt.show()
     plt.close()
 
 def draw_graph2(digraph, digraph_name, inc_nodes, k, path, time, mass, ipos): # VMRk with weights and masses
@@ -323,7 +322,6 @@ def draw_graph2(digraph, digraph_name, inc_nodes, k, path, time, mass, ipos): # 
     # fig.savefig() сохраняет, понятное дело
 
     fig.savefig(os.getcwd() + '/output/{}.png'.format(digraph_name))
-    plt.show()
     plt.close()
 
 def draw_graph3(digraph, digraph_name, inc_nodes, dec_nodes, k, paths, ipos): # Magnetic Reachability with degree of k
@@ -398,7 +396,6 @@ def draw_graph3(digraph, digraph_name, inc_nodes, dec_nodes, k, paths, ipos): # 
     # fig.savefig() сохраняет, понятное дело
 
     fig.savefig(os.getcwd() + '/output/{}.png'.format(digraph_name))
-    plt.show()
     plt.close()
 
 def draw_graph4(digraph, digraph_name, inc_nodes, dec_nodes, k, path, time, mass, ipos): # MnRk with weights and masses
@@ -459,7 +456,6 @@ def draw_graph4(digraph, digraph_name, inc_nodes, dec_nodes, k, path, time, mass
     # fig.savefig() сохраняет, понятное дело
 
     fig.savefig(os.getcwd() + '/output/{}.png'.format(digraph_name))
-    plt.show()
     plt.close()
 
 
