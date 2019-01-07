@@ -283,7 +283,7 @@ def dfs_vmrk_paths_telecom_nets(graph, inc_nodes, k, start, goal, m, check = 0):
     else:
         return yield_stack
 
-def dfs_mnrk_paths(graph, inc_nodes, k, start, goal, dec_nodes = [], check = 0):                  # DMP - Поиск путей вгулбину в графе с магнитной достижимостью
+def dfs_mnrk_paths(graph, inc_nodes, k, start, goal, dec_nodes = [], check = 0):                  # DMP - Поиск путей вгулбину в графе с магнитной достижимостью, возвращает генератор путей
     '''
     Функция ищет пути от вершины start до goal, удовлетворяющие магнтиности порядка k.
     Возвращает генератор путей.
@@ -419,21 +419,29 @@ def dfs_mnrk_paths_telecom_nets(graph, inc_nodes, k, start, goal, m, dec_nodes =
 
 
 
-def main(type, a1, a2, a3, a4, a5 = '', a6 = '', a7 = '', a8 = '', a9 = ''):
+def main(type, a1, a2, a3, a4, a5 = '', a6 = '', a7 = '', a8 = '', a9 = '', a9 = ''):
 
 # (type, digraph, digraph_name, inc_nodes, dec_nodes, k, path, time, mass, ipos)
+# a1 is digraph name
+digraph = extract(a1)
+
 
     if type == '0':
-        drawing_module.draw_graph0(digraph = a1, digraph_name = a2, path = a3, ipos = a4) # (digraph, digraph_name, paths, ipos)
+        paths = list(dfs_paths(graph = digraph, start = a3, goal = a4))
+        drawing_module.draw_graph0(digraph = digraph, digraph_name = a2, paths = paths, ipos = a5) # (digraph, digraph_name, paths, ipos)
 
     elif type == '1':
-        drawing_module.draw_graph1(digraph = a1, digraph_name = a2, inc_nodes = a3, k = a4, paths = a5, ipos = a6) # (digraph, digraph_name, inc_nodes, k, paths, ipos)
+        paths = list(dfs_vmrk_paths(graph = digraph, inc_nodes = a3, k = a4, start = a5, goal = a6))
+        drawing_module.draw_graph1(digraph = digraph, digraph_name = a2, inc_nodes = a3, k = a4, paths = paths, ipos = a7) # (digraph, digraph_name, inc_nodes, k, paths, ipos)
 
     elif type == '2':
-        drawing_module.draw_graph2(digraph = a1, digraph_name = a2, inc_nodes = a3, k = a4, path = a5, time = a6, mass = a7, ipos = a8) # (digraph, digraph_name, inc_nodes, k, path, time, mass, ipos)
+        path = dfs_vmrk_paths_telecom_nets(graph = digraph, inc_nodes = a3, k = a4, start = a5, goal = a6)
+        drawing_module.draw_graph2(digraph = digraph, digraph_name = a2, inc_nodes = a3, k = a4, path = path[0], time = path[1], mass = a7, ipos = a8) # (digraph, digraph_name, inc_nodes, k, path, time, mass, ipos)
 
     elif type == '3':
-        drawing_module.draw_graph3(digraph = a1, digraph_name = a2, inc_nodes = a3, dec_nodes = a4, k = a5, paths = a6, ipos = a7) # (digraph, digraph_name, inc_nodes, dec_nodes, k, paths, ipos)
+        paths = list(dfs_mnrk_paths(graph = digraph, icnc_nodes = a3, dec_nodes = a4, k = a5, start = a6, goal = a7))
+        drawing_module.draw_graph3(digraph = digraph, digraph_name = a2, inc_nodes = a3, dec_nodes = a4, k = a5, paths = paths, ipos = a8) # (digraph, digraph_name, inc_nodes, dec_nodes, k, paths, ipos)
 
     elif type == '4':
-        drawing_module.draw_graph4(digraph = a1, digraph_name = a2, inc_nodes = a3, dec_nodes = a4, k = a5, path = a6, time = a7, mass = a8, ipos = a9) # (digraph, digraph_name, inc_nodes, dec_nodes, k, path, time, mass, ipos)
+        path = dfs_mnrk_paths_telecom_nets(graph = digraph, inc_nodes = a3, dec_nodes = a4, k = a5, start = a6, goal = a7, m = a8)
+        drawing_module.draw_graph4(digraph = digraph, digraph_name = a2, inc_nodes = a3, dec_nodes = a4, k = path[2], path = path[0], time = path[1], mass = a8, ipos = a9) # (digraph, digraph_name, inc_nodes, dec_nodes, k, path, time, mass, ipos)
