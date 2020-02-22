@@ -5,7 +5,7 @@ import ruamel.yaml
 
 
 def get_config(path):
-    with open(path, 'r') as f:
+    with open(path, 'r', encoding='utf-8') as f:
         lines = f.readlines()
     config = ruamel.yaml.load('\n'.join(lines), Loader=ruamel.yaml.SafeLoader)
     return config
