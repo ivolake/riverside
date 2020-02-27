@@ -1,26 +1,28 @@
 from abc import ABC
 import os
 
+import functions as func
 
 class BaseGraph(ABC):
 
     def __init__(self, config):
         self.config = config
         self.type = config.get('graph_type')
-        self.struct = self.extract_graph(config.get('graph_path'))
 
-        self.nodes = self.get_nodes(self.struct)
-        self.edges = self.get_edges(self.struct)
+        self.weighted = False
+        self.struct = self._extract_graph(config.get('graph_path'))
 
-        # self.oriented = ???
+        self.nodes = self.get_nodes()
+        self.edges = self.get_edges()
+
 
     def __repr__(self):
-        pass
+        return f'Graph(type={self.type}, nodes={self.nodes}, weighted={self.weighted})'
 
     def get_struct(self):
-        pass
+        return self.struct
 
-    def extract_graph(self, name):
+    def _extract_graph(self, name):
         """
             Если info = False (по умолчанию)
             Функция считывает граф, заданный матрицей смежности, из файла. Допустимые типы файлов: .txt, .csv, .xls и .xlsx.
@@ -35,14 +37,14 @@ class BaseGraph(ABC):
             Если info = True
             Функция дополнительно считывает inc_nodes и dec_nodes из файла %fname%_info.txt
         """
-        # CHECKING THE EXISTENCE
+        # Проверка существования файла
         if os.path.isfile(os.getcwd() + '/' + name):
             # пробуем найти в текущей директории
             path = os.getcwd() + '/' + name
 
-        elif os.path.isfile(os.getcwd()[:os.getcwd().find(u'Documents\\')] + 'Desktop/' + fname):
+        elif os.path.isfile(os.getcwd()[:os.getcwd().find(u'Documents\\')] + 'Desktop/' + name):
             # пробуем найти на рабочем столе
-            path = os.getcwd()[:os.getcwd().find(u'Documents\\')] + 'Desktop/' + fname
+            path = os.getcwd()[:os.getcwd().find(u'Documents\\')] + 'Desktop/' + name
             # Почему разные слэши?
             # Потому что функция find() ищет в строке, которая создана обработчиком Windows, и там разделители директорий - \
             # А строку, которую прибавляю я ('Desktop/test1.txt'), обрабатывает Python-овский обработчик, и для него разделитель директорий - /
@@ -56,7 +58,7 @@ class BaseGraph(ABC):
             lines = f.readlines()
             f.close()
         matrix = []
-        vertexes = eval('[' + lines[0][2:-1] + ']')
+        self.nodes = eval('[' + lines[0][2:-1] + ']')
         for line in lines[1:]:
             matrix.append(eval('[' + line[1:][2:-1] + ']'))
         g = dict()
@@ -64,15 +66,19 @@ class BaseGraph(ABC):
             neighbours = dict()
             for j in range(0, len(matrix[i])):
                 if matrix[i][j] not in [0, 1]:
-                    is_weighted = True
+                    self.weighted = True
                 if (matrix[i][j] != 0) & (i != j):
-                    neighbours.update({str(vertexes[j]): matrix[i][j]})
-            g.update({str(vertexes[i]): neighbours})
+                    neighbours.update({str(self.nodes[j]): matrix[i][j]})
+            g.update({str(self.nodes[i]): neighbours})
+
+        if not self.weighted:
+            (self.struct, self.edges) = func.generate_separate_graph_and_weights(g)  # shit is shit
+
         return g
         
     def get_nodes(self):
-        pass
+        return self.nodes
 
     def get_edges(self):
-        pass
+        return self.edges
 
