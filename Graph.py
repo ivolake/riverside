@@ -1,19 +1,16 @@
-from abc import ABC
 import os
 
 import functions as func
 
-class BaseGraph(ABC):
+
+class BaseGraph:
 
     def __init__(self, config):
         self.config = config
-        self.type = config.get('graph_type')
+        self.type = config.get('type')
 
-        self.weighted = False
-        self.struct = self._extract_graph(config.get('graph_path'))
+        self.struct, self.edges, self.nodes, self.weighted = self._extract_graph(self.config.get('path'))
 
-        self.nodes = self.get_nodes()
-        self.edges = self.get_edges()
 
 
     def __repr__(self):
@@ -58,27 +55,54 @@ class BaseGraph(ABC):
             lines = f.readlines()
             f.close()
         matrix = []
-        self.nodes = eval('[' + lines[0][2:-1] + ']')
+        nodes = eval('[' + lines[0][2:-1] + ']')
         for line in lines[1:]:
             matrix.append(eval('[' + line[1:][2:-1] + ']'))
         g = dict()
+        weighted = False
         for i in range(0, len(matrix)):
             neighbours = dict()
             for j in range(0, len(matrix[i])):
                 if matrix[i][j] not in [0, 1]:
-                    self.weighted = True
+                    weighted = True
                 if (matrix[i][j] != 0) & (i != j):
-                    neighbours.update({str(self.nodes[j]): matrix[i][j]})
-            g.update({str(self.nodes[i]): neighbours})
+                    neighbours.update({str(nodes[j]): matrix[i][j]})
+            g.update({str(nodes[i]): neighbours})
 
-        if not self.weighted:
-            (self.struct, self.edges) = func.generate_separate_graph_and_weights(g)  # shit is shit
+        g, edges = func.generate_separate_graph_and_weights(g)
 
-        return g
-        
+        if not weighted:
+            edges = func.deweight(edges)
+
+        return g, edges, nodes, weighted
+
     def get_nodes(self):
         return self.nodes
 
     def get_edges(self):
         return self.edges
 
+
+class VMRkGraph(BaseGraph):
+
+    def __init__(self, config):
+        super().__init__(config)
+
+        self.inc_nodes = config.get('options').get('inc_nodes')
+
+    def __repr__(self):
+        return f'VMRkGraph(type={self.type}, nodes={self.nodes},  \
+weighted={self.weighted}), inc_nodes={self.inc_nodes}, k={self.k}'
+
+class MNRkGraph(BaseGraph):
+
+    def __init__(self, config):
+        super().__init__(config)
+
+        self.inc_nodes = config.get('options').get('inc_nodes')
+        self.dec_nodes = config.get('options').get('dec_nodes')
+
+    def __repr__(self):
+        return f'VMRkGraph(type={self.type}, nodes={self.nodes}, \
+weighted={self.weighted}), inc_nodes={self.inc_nodes}, \
+dec_nodes={self.dec_nodes}, k={self.k}'

@@ -1,7 +1,7 @@
 import argparse
 import sys
 import ruamel.yaml
-from Graphs import Graph
+from functions import get_graph
 
 
 
@@ -22,7 +22,8 @@ if __name__ == '__main__':
     args = parse_args(sys.argv[1:])
     config = get_config(args.config_path)
 
-    graph = Graph(config)
+    graph = get_graph(config.get('graph'))
+    pass
     # calculator = Calculator(config)
     # drawer = Drawer()
     # calculator.run()

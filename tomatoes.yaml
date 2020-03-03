@@ -1,17 +1,20 @@
-graph_path: C:\Users\bzakh\OneDrive\Documents\Python_Scripts\Networks_Science_2\Graph_Templates\wdigraph6.txt
-  # ^ Указывается адрес на файл с матрицей смежности файла (txt, csv)
-graph_name: wdigraph_new
-  # ^ Опциональный параметр. Если указан,
-  # результат будет сохранен в виде .png изображения
-graph_type: mnrk_telnet
-  # ^ Тип графа.
-  # Возможные типы: simple, vmrk, mnrk, telnet,
-  # vmrk_telnet, mnrk_telnet, vmrk_tb_telnet, mnrk_tb_telnet
-options:
+graph:
+  path: C:\Users\bzakh\OneDrive\Documents\Python_Scripts\Networks_Science_2\Graph_Templates\wdigraph6.txt
+   # ^ Указывается адрес на файл с матрицей смежности файла (txt, csv)
+  name: wdigraph_new
+   # ^ Опциональный параметр. Если указан,
+   # результат будет сохранен в виде .png изображения
+  type: mnrk
+   # ^ Тип графа.
+   # Возможные типы: simple, vmrk, mnrk, telnet,
+   # vmrk_telnet, mnrk_telnet, vmrk_tb_telnet, mnrk_tb_telnet
+  options:
+    inc_nodes: [1, 2, 6, 7, 8, 10, 11, 12, 15]
+    dec_nodes: [3, 4, 5, 9, 13, 14, 18]
+
+calculation_options:
   start: 3
   goal: 15
   mass: 250
   k: 2
-  inc_nodes: [1, 2, 6, 7, 8, 10, 11, 12, 15]
-  dec_nodes: [3, 4, 5, 9, 13, 14, 18]
   check: 0
