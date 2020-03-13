@@ -19,7 +19,8 @@ class BaseGraph:
     def get_struct(self):
         return self.struct
 
-    def _extract_graph(self, name):
+    @staticmethod
+    def _extract_graph(name):
         """
             Если info = False (по умолчанию)
             Функция считывает граф, заданный матрицей смежности, из файла. Допустимые типы файлов: .txt, .csv, .xls и .xlsx.
