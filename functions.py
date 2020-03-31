@@ -1,4 +1,5 @@
 from collections import Iterable
+from Graphs import BaseGraph
 
 def generate_separate_graph_and_weights(g: dict) -> (dict, dict):
     '''
@@ -60,8 +61,35 @@ def generate_separate_graph_and_weights(g: dict) -> (dict, dict):
 
     return new_g, edges_with_labels
 
-def deweight(edges: dict) -> Iterable:
-    result = []
-    for edge in edges:
-        result.append(edge)
-    return result
+def deweight(graph: dict) -> Iterable:
+    """
+    Превращает взвешенный граф в невзвешенный
+    :param graph:
+    :return:
+    """
+    for v in list(graph.keys()):
+        graph[v] = graph[v].keys()
+    return graph
+
+def get_edges(graph: dict, weighted: bool):
+    """
+    Возвращает ребра графа
+    :param graph:
+    :param weighted:
+    :return:
+    """
+    if not weighted:
+        edges = []
+        for vi in list(graph.keys()):  # иду по вершинам графа. vi - текушая вершина
+            neighbours = []
+            for vj in list(graph[vi].keys()):  # иду по соседям vi
+                neighbours.append(vj)
+                edges.append((vi, vj))
+    else:
+        edges = dict()
+        for vi in list(graph.keys()):  # иду по вершинам графа. vi - текушая вершина
+            neighbours = []
+            for vj in list(graph[vi].keys()):  # иду по соседям vi
+                neighbours.append(vj)
+                edges.update({(vi, vj): str(graph[vi][vj])})
+    return edges

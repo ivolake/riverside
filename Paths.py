@@ -82,6 +82,9 @@ class TNPath(Path):
         else:
             self.time = time
 
+    def __repr__(self):
+        return f'{self.path},\n\ttime: {self.time:.3f}'
+
 
 class PathCollection(List):
     def __init__(self, paths: List):

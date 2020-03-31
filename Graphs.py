@@ -70,10 +70,8 @@ class BaseGraph:
                     neighbours.update({str(nodes[j]): matrix[i][j]})
             g.update({str(nodes[i]): neighbours})
 
-        g, edges = func.generate_separate_graph_and_weights(g)
 
-        if not weighted:
-            edges = func.deweight(edges)
+        edges = func.get_edges(g, weighted)
 
         return g, edges, nodes, weighted
 
@@ -93,7 +91,7 @@ class VMRkGraph(BaseGraph):
 
     def __repr__(self):
         return f'VMRkGraph(type={self.type}, nodes={self.nodes},  \
-weighted={self.weighted}), inc_nodes={self.inc_nodes}, k={self.k}'
+weighted={self.weighted}), inc_nodes={self.inc_nodes})'
 
 class MNRkGraph(BaseGraph):
 
@@ -106,4 +104,4 @@ class MNRkGraph(BaseGraph):
     def __repr__(self):
         return f'VMRkGraph(type={self.type}, nodes={self.nodes}, \
 weighted={self.weighted}), inc_nodes={self.inc_nodes}, \
-dec_nodes={self.dec_nodes}'
+dec_nodes={self.dec_nodes})'
