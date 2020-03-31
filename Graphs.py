@@ -90,6 +90,7 @@ class VMRkGraph(BaseGraph):
         super().__init__(config)
 
         self.inc_nodes = config.get('options').get('inc_nodes')
+        self.k = config.get('options').get('k')
 
     def __repr__(self):
         return f'VMRkGraph(type={self.type}, nodes={self.nodes},  \
@@ -102,6 +103,7 @@ class MNRkGraph(BaseGraph):
 
         self.inc_nodes = config.get('options').get('inc_nodes')
         self.dec_nodes = config.get('options').get('dec_nodes')
+        self.k = config.get('options').get('k')
 
     def __repr__(self):
         return f'VMRkGraph(type={self.type}, nodes={self.nodes}, \
