@@ -1,6 +1,6 @@
 from collections import Generator, Iterable
 
-from Graph import BaseGraph
+from Graphs import BaseGraph
 from Paths import PathCollection, Path, TNPath, TNPathCollection
 
 

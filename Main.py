@@ -1,8 +1,28 @@
 import argparse
 import sys
 import ruamel.yaml
-from functions import get_graph
+from Graphs import BaseGraph, VMRkGraph, MNRkGraph
 
+def get_graph(config: dict) -> BaseGraph:
+    graph_type = config.get('type')
+    if graph_type == 'simple':
+        return BaseGraph(config)
+    elif graph_type == 'vmrk':
+        return VMRkGraph(config)
+    elif graph_type == 'mnrk':
+        return MNRkGraph(config)
+    elif graph_type == 'telnet':
+        pass
+    elif graph_type == 'vmrk_telnet':
+        pass
+    elif graph_type == 'mnrk_telnet':
+        pass
+    elif graph_type == 'vmrk_tb_telnet':
+        pass
+    elif graph_type == 'mnrk_tb_telnet':
+        pass
+    else:
+        raise Exception('Wrong graph type declared in config')
 
 
 def get_config(path):
