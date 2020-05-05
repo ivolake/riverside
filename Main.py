@@ -1,7 +1,7 @@
 import argparse
 import sys
 import ruamel.yaml
-from Graphs import BaseGraph, VMRkGraph, MNRkGraph
+from Graphs import BaseGraph, VMRkGraph, MNRkGraph, BaseTelNet
 
 def get_graph(config: dict) -> BaseGraph:
     graph_type = config.get('type')
@@ -12,7 +12,7 @@ def get_graph(config: dict) -> BaseGraph:
     elif graph_type == 'mnrk':
         return MNRkGraph(config)
     elif graph_type == 'telnet':
-        pass
+        return BaseTelNet(config)
     elif graph_type == 'vmrk_telnet':
         pass
     elif graph_type == 'mnrk_telnet':

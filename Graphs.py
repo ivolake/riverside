@@ -1,6 +1,8 @@
 import os
 
 import functions as func
+from Calculators import BaseCalculator, VMRkCalculator, MNRkCalculator, BaseTelnetCalculator
+from Paths import PathCollection
 
 
 class BaseGraph:
@@ -85,6 +87,8 @@ class BaseGraph:
     def get_edges(self):
         return self.edges
 
+    def calculate(self, start: str, goal: str) -> PathCollection:
+        return BaseCalculator(self.struct, start, goal).calculate()
 
 class VMRkGraph(BaseGraph):
 
@@ -96,6 +100,8 @@ class VMRkGraph(BaseGraph):
     def __repr__(self):
         return f'VMRkGraph(type={self.type}, nodes={self.nodes}, inc_nodes={self.inc_nodes}, weighted={self.weighted})'
 
+    def calculate(self, start: str, goal: str, k: int) -> PathCollection:
+        return VMRkCalculator(self.struct, start, goal, self.inc_nodes, k).calculate()
 
 class MNRkGraph(BaseGraph):
 
@@ -108,6 +114,8 @@ class MNRkGraph(BaseGraph):
     def __repr__(self):
         return f'MNRkGraph(type={self.type}, nodes={self.nodes}, inc_nodes={self.inc_nodes}, dec_nodes={self.dec_nodes}, weighted={self.weighted})'
 
+    def calculate(self, start: str, goal: str, k: int) -> PathCollection:
+        return MNRkCalculator(self.struct, start, goal, self.inc_nodes, self.dec_nodes, k).calculate()
 
 class BaseTelNet(BaseGraph):
 
@@ -118,4 +126,4 @@ class BaseTelNet(BaseGraph):
         return f'TelNetGraph(type={self.type}, nodes={self.nodes}, weighted={self.weighted})'
 
     def get_weights(self):
-        return self.edges.values()
+        return list(map(float, self.edges.values()))

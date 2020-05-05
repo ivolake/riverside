@@ -90,5 +90,5 @@ def get_edges(graph: dict, weighted: bool):
             neighbours = []
             for vj in list(graph[vi].keys()):  # иду по соседям vi
                 neighbours.append(vj)
-                edges.update({(vi, vj): str(graph[vi][vj])})
+                edges.update({(vi, vj): float(graph[vi][vj])})
     return edges

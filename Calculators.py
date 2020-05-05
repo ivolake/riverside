@@ -5,8 +5,8 @@ from Paths import PathCollection, Path, TNPath, TNPathCollection
 
 
 class BaseCalculator:
-    def __init__(self, graph: BaseGraph, start: str, goal: str):
-        self.graph = graph.get_struct()
+    def __init__(self, graph: dict, start: str, goal: str):
+        self.graph = graph
         self.start = start
         self.goal = goal
 
@@ -34,7 +34,7 @@ class BaseCalculator:
         return paths
 
 class BaseTelnetCalculator(BaseCalculator):
-    def __init__(self, graph: BaseGraph, start: str, goal: str, mass: float):
+    def __init__(self, graph: dict, start: str, goal: str, mass: float):
         super().__init__(graph, start, goal)
 
         self.mass = mass
@@ -77,10 +77,10 @@ class BaseTelnetCalculator(BaseCalculator):
 
 
 class VMRkCalculator(BaseCalculator):
-    def __init__(self, graph: VMRkGraph, start: str, goal: str, k: int):
+    def __init__(self, graph: dict, start: str, goal: str, inc_nodes: list, k: int):
         super().__init__(graph, start, goal)
 
-        self.inc_nodes = graph.inc_nodes
+        self.inc_nodes = inc_nodes
         self.k = k
 
     def calculate(self) -> PathCollection:
@@ -111,11 +111,11 @@ class VMRkCalculator(BaseCalculator):
 
 
 class MNRkCalculator(BaseCalculator):
-    def __init__(self, graph: MNRkGraph, start: str, goal: str, k: int):
+    def __init__(self, graph: dict, start: str, goal: str, inc_nodes: list, dec_nodes: list, k: int):
         super().__init__(graph, start, goal)
 
-        self.inc_nodes = graph.inc_nodes
-        self.dec_nodes = graph.dec_nodes
+        self.inc_nodes = inc_nodes
+        self.dec_nodes = dec_nodes
         self.k = k
 
     def calculate(self) -> PathCollection:
