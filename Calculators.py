@@ -1,6 +1,6 @@
 from collections import Generator, Iterable
 
-from Graphs import BaseGraph
+from Graphs import BaseGraph, VMRkGraph, MNRkGraph
 from Paths import PathCollection, Path, TNPath, TNPathCollection
 
 
@@ -73,6 +73,86 @@ class BaseTelnetCalculator(BaseCalculator):
                     stack.append((nextv, TNPath(path + [nextv], t)))
                     t -= self.mass / v
                 # ---------------- ORIGINAL END ------------
+        return paths
+
+
+class VMRkCalculator(BaseCalculator):
+    def __init__(self, graph: VMRkGraph, start: str, goal: str, k: int):
+        super().__init__(graph, start, goal)
+
+        self.k = k
+
+    def calculate(self) -> PathCollection:
+        '''
+        Depth-First Search — Поиск вглубину, функция выводит все пути в графе типа VMRk из start в goal
+        Функция ищет VMRk пути от вершины start до goal
+        Возвращает генератор путей.
+        '''
+        paths = PathCollection([])
+        i = 0  # счетчик запрщенных вершин
+        stack = [(self.start, Path([self.start]), i)]
+        while stack:
+            (vertex, path, i) = stack.pop()
+            # --------------- CONDITIONS ---------------
+            if vertex in self.graph.inc_nodes:
+                i += 1
+            else:
+                i = 0
+            # --------------- CONDITIONS ---------------
+            for next in set(self.graph[vertex]) - set(path):
+                if not ((next in self.graph.inc_nodes) & (i >= self.k)):  # допустимость по условию VMRk
+                    # ---------------- ORIGINAL ----------------
+                    if next == self.goal:
+                        paths.append(path + [next])
+                    else:
+                        stack.append((next, path + [next], i))
+        return paths
+
+
+class MNRkCalculator(BaseCalculator):
+    def __init__(self, graph: MNRkGraph, start: str, goal: str, k: int):
+        super().__init__(graph, start, goal)
+
+        self.k = k
+
+    def calculate(self) -> PathCollection:
+        '''
+        DMP - Поиск путей вгулбину в графе с магнитной достижимостью
+        Функция ищет пути от вершины start до goal, удовлетворяющие магнтиности порядка k.
+        Возвращает генератор путей.
+        Параметр inc_nodes принимает множество увеличивающих магнтиность вершин.
+        Параметр dec_nodes принимает множество уменьшающих магнтиность вершин.
+        Если dec_nodes пустой, то dec_nodes становятся все вершины графа, кроме inc_nodes.
+        '''
+        paths = PathCollection([])
+
+        i = 0  # счетчик запрщенных вершин
+
+        if not self.graph.dec_nodes:
+            dec_nodes = list(set(self.graph) - set(self.graph.inc_nodes))
+
+        stack = [(self.start, Path[self.start], i)]
+        while stack:
+            (vertex, path, i) = stack.pop()  # print(' = ' + str())
+            # --------------- CONDITIONS ---------------
+            if vertex in self.graph.inc_nodes:
+                i += 1
+            elif vertex in self.graph.dec_nodes:
+                i -= 1
+            # --------------- CONDITIONS ---------------
+            for next in set(self.graph[vertex]) - set(path):
+                # ---------------- ORIGINAL ----------------
+                if next == self.goal:
+                    if next in self.graph.inc_nodes:
+                        i += 1
+                    elif next in self.graph.dec_nodes:
+                        i -= 1
+                    if i == self.k:
+                        paths.append(path + [next])
+
+                else:
+                    stack.append((next, path + [next], i))
+                # ---------------- ORIGINAL ----------------
         return paths
 
 

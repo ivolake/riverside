@@ -70,7 +70,7 @@ class Path(List):
     def __iter__(self) -> Iterator:
         return iter(self.path)
 
-    def append(self, value) -> None:
+    def append(self, value: str) -> None:
         self.path.append(value)
 
 
