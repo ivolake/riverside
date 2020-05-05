@@ -1,5 +1,4 @@
 from collections import Iterable
-from Graphs import BaseGraph
 
 def generate_separate_graph_and_weights(g: dict) -> (dict, dict):
     '''
