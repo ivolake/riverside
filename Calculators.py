@@ -80,6 +80,7 @@ class VMRkCalculator(BaseCalculator):
     def __init__(self, graph: VMRkGraph, start: str, goal: str, k: int):
         super().__init__(graph, start, goal)
 
+        self.inc_nodes = graph.inc_nodes
         self.k = k
 
     def calculate(self) -> PathCollection:
@@ -94,13 +95,13 @@ class VMRkCalculator(BaseCalculator):
         while stack:
             (vertex, path, i) = stack.pop()
             # --------------- CONDITIONS ---------------
-            if vertex in self.graph.inc_nodes:
+            if vertex in self.inc_nodes:
                 i += 1
             else:
                 i = 0
             # --------------- CONDITIONS ---------------
             for next in set(self.graph[vertex]) - set(path):
-                if not ((next in self.graph.inc_nodes) & (i >= self.k)):  # допустимость по условию VMRk
+                if not ((next in self.inc_nodes) & (i >= self.k)):  # допустимость по условию VMRk
                     # ---------------- ORIGINAL ----------------
                     if next == self.goal:
                         paths.append(path + [next])
@@ -113,6 +114,8 @@ class MNRkCalculator(BaseCalculator):
     def __init__(self, graph: MNRkGraph, start: str, goal: str, k: int):
         super().__init__(graph, start, goal)
 
+        self.inc_nodes = graph.inc_nodes
+        self.dec_nodes = graph.dec_nodes
         self.k = k
 
     def calculate(self) -> PathCollection:
@@ -128,24 +131,24 @@ class MNRkCalculator(BaseCalculator):
 
         i = 0  # счетчик запрщенных вершин
 
-        if not self.graph.dec_nodes:
-            dec_nodes = list(set(self.graph) - set(self.graph.inc_nodes))
+        if not self.dec_nodes:
+            self.dec_nodes = list(set(self.graph) - set(self.inc_nodes))
 
         stack = [(self.start, Path[self.start], i)]
         while stack:
             (vertex, path, i) = stack.pop()  # print(' = ' + str())
             # --------------- CONDITIONS ---------------
-            if vertex in self.graph.inc_nodes:
+            if vertex in self.inc_nodes:
                 i += 1
-            elif vertex in self.graph.dec_nodes:
+            elif vertex in self.dec_nodes:
                 i -= 1
             # --------------- CONDITIONS ---------------
             for next in set(self.graph[vertex]) - set(path):
                 # ---------------- ORIGINAL ----------------
                 if next == self.goal:
-                    if next in self.graph.inc_nodes:
+                    if next in self.inc_nodes:
                         i += 1
-                    elif next in self.graph.dec_nodes:
+                    elif next in self.dec_nodes:
                         i -= 1
                     if i == self.k:
                         paths.append(path + [next])

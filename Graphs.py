@@ -9,8 +9,9 @@ class BaseGraph:
         self.config = config
         self.type = config.get('type')
 
-        self.struct, self.edges, self.nodes, self.weighted = self._extract_graph(self.config.get('path'))
+        self.struct, self.edges, self.nodes, self.weighted = self._extract_graph(self.config.get('path'), self.type)
 
+    # TODO: сделать struct, edges, nodes и weighted через @property
 
 
     def __repr__(self):
@@ -20,20 +21,13 @@ class BaseGraph:
         return self.struct
 
     @staticmethod
-    def _extract_graph(name):
+    def _extract_graph(name, graph_type):
         """
-            Если info = False (по умолчанию)
             Функция считывает граф, заданный матрицей смежности, из файла. Допустимые типы файлов: .txt, .csv, .xls и .xlsx.
             В аргументе функции - путь до файла. Если файл лежит в той же директории,
             что и вызываемая программа, или на рабочем столе компьютера, можно указать просто название файла.
             Названия требуется указать с расширением.
             Возвращаемые данные - граф.
-            Пример:
-
-            digraph = extract('d1.txt')
-
-            Если info = True
-            Функция дополнительно считывает inc_nodes и dec_nodes из файла %fname%_info.txt
         """
         # Проверка существования файла
         if os.path.isfile(os.getcwd() + '/' + name):
@@ -70,8 +64,18 @@ class BaseGraph:
                     neighbours.update({str(nodes[j]): matrix[i][j]})
             g.update({str(nodes[i]): neighbours})
 
-
-        edges = func.get_edges(g, weighted)
+        if graph_type in ['simple', 'vmrk', 'mnrk'] and weighted:
+            print('В файле содержится взвешенный граф, но указанный тип подразумевает отсутствие весов на графе. Граф будет считан, как невзвешанный')
+            edges = func.get_edges(g, False)
+            weighted = False
+        elif graph_type in ['simple', 'vmrk', 'mnrk'] and not weighted:
+            edges = func.get_edges(g, False)
+            weighted = False
+        elif graph_type not in ['simple', 'vmrk', 'mnrk'] and weighted:
+            edges = func.get_edges(g, True)
+        elif graph_type not in ['simple', 'vmrk', 'mnrk'] and not weighted:
+            print('В файле содержится невзвешенный граф, но указанный тип подразумевает наличие весов у графа. Граф будет считан, как невзвешанный')
+            edges = func.get_edges(g, True)
 
         return g, edges, nodes, weighted
 
@@ -90,8 +94,8 @@ class VMRkGraph(BaseGraph):
         self.inc_nodes = config.get('options').get('inc_nodes')
 
     def __repr__(self):
-        return f'VMRkGraph(type={self.type}, nodes={self.nodes},  \
-weighted={self.weighted}), inc_nodes={self.inc_nodes})'
+        return f'VMRkGraph(type={self.type}, nodes={self.nodes}, inc_nodes={self.inc_nodes}, weighted={self.weighted})'
+
 
 class MNRkGraph(BaseGraph):
 
@@ -102,6 +106,16 @@ class MNRkGraph(BaseGraph):
         self.dec_nodes = config.get('options').get('dec_nodes')
 
     def __repr__(self):
-        return f'VMRkGraph(type={self.type}, nodes={self.nodes}, \
-weighted={self.weighted}), inc_nodes={self.inc_nodes}, \
-dec_nodes={self.dec_nodes})'
+        return f'MNRkGraph(type={self.type}, nodes={self.nodes}, inc_nodes={self.inc_nodes}, dec_nodes={self.dec_nodes}, weighted={self.weighted})'
+
+
+class BaseTelNet(BaseGraph):
+
+    def __init__(self, config):
+        super().__init__(config)
+
+    def __repr__(self):
+        return f'TelNetGraph(type={self.type}, nodes={self.nodes}, weighted={self.weighted})'
+
+    def get_weights(self):
+        return self.edges.values()

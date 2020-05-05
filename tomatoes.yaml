@@ -7,7 +7,7 @@ graph:
   type: mnrk
    # ^ Тип графа.
    # Возможные типы: simple, vmrk, mnrk, telnet,
-   # vmrk_telnet, mnrk_telnet, vmrk_tb_telnet, mnrk_tb_telnet
+   # vmrk_telnet, mnrk_telnet, tb_telnet, vmrk_tb_telnet, mnrk_tb_telnet
   options:
     inc_nodes: [1, 2, 6, 7, 8, 10, 11, 12, 15]
     dec_nodes: [3, 4, 5, 9, 13, 14, 18]
