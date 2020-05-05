@@ -69,9 +69,11 @@ class BaseGraph:
         if graph_type in ['simple', 'vmrk', 'mnrk'] and weighted:
             print('В файле содержится взвешенный граф, но указанный тип подразумевает отсутствие весов на графе. Граф будет считан, как невзвешанный')
             edges = func.get_edges(g, False)
+            g = func.deweight(g)
             weighted = False
         elif graph_type in ['simple', 'vmrk', 'mnrk'] and not weighted:
             edges = func.get_edges(g, False)
+            g = func.deweight(g)
             weighted = False
         elif graph_type not in ['simple', 'vmrk', 'mnrk'] and weighted:
             edges = func.get_edges(g, True)

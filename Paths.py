@@ -91,7 +91,10 @@ class PathCollection(List):
         self.paths = paths
 
     def __repr__(self) -> str:
-        return '\n'.join([f'{i}: {path}' for i, path in enumerate(self.paths)])
+        if len(self.paths) == 0:
+            return 'Не обнаружено допустимых путей.'
+        else:
+            return '\n'.join([f'{i}: {path}' for i, path in enumerate(self.paths)])
 
     def __len__(self) -> int:
         return len(self.paths)

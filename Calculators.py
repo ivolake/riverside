@@ -1,6 +1,4 @@
-from collections import Generator, Iterable
 
-from Graphs import BaseGraph, VMRkGraph, MNRkGraph
 from Paths import PathCollection, Path, TNPath, TNPathCollection
 
 
@@ -100,13 +98,13 @@ class VMRkCalculator(BaseCalculator):
             else:
                 i = 0
             # --------------- CONDITIONS ---------------
-            for next in set(self.graph[vertex]) - set(path):
-                if not ((next in self.inc_nodes) & (i >= self.k)):  # допустимость по условию VMRk
+            for nextv in set(self.graph[vertex]) - set(path):
+                if not ((nextv in self.inc_nodes) & (i >= self.k)):  # допустимость по условию VMRk
                     # ---------------- ORIGINAL ----------------
-                    if next == self.goal:
-                        paths.append(path + [next])
+                    if nextv == self.goal:
+                        paths.append(path + [nextv])
                     else:
-                        stack.append((next, path + [next], i))
+                        stack.append((nextv, path + [nextv], i))
         return paths
 
 
@@ -134,7 +132,7 @@ class MNRkCalculator(BaseCalculator):
         if not self.dec_nodes:
             self.dec_nodes = list(set(self.graph) - set(self.inc_nodes))
 
-        stack = [(self.start, Path[self.start], i)]
+        stack = [(self.start, Path([self.start]), i)]
         while stack:
             (vertex, path, i) = stack.pop()  # print(' = ' + str())
             # --------------- CONDITIONS ---------------
@@ -143,18 +141,18 @@ class MNRkCalculator(BaseCalculator):
             elif vertex in self.dec_nodes:
                 i -= 1
             # --------------- CONDITIONS ---------------
-            for next in set(self.graph[vertex]) - set(path):
+            for nextv in set(self.graph[vertex]) - set(path):
                 # ---------------- ORIGINAL ----------------
-                if next == self.goal:
-                    if next in self.inc_nodes:
+                if nextv == self.goal:
+                    if nextv in self.inc_nodes:
                         i += 1
-                    elif next in self.dec_nodes:
+                    elif nextv in self.dec_nodes:
                         i -= 1
                     if i == self.k:
-                        paths.append(path + [next])
+                        paths.append(path + [nextv])
 
                 else:
-                    stack.append((next, path + [next], i))
+                    stack.append((nextv, path + [nextv], i))
                 # ---------------- ORIGINAL ----------------
         return paths
 

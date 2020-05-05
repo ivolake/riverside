@@ -67,7 +67,7 @@ def deweight(graph: dict) -> Iterable:
     :return:
     """
     for v in list(graph.keys()):
-        graph[v] = graph[v].keys()
+        graph[v] = list(graph[v].keys())
     return graph
 
 def get_edges(graph: dict, weighted: bool):

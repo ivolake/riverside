@@ -44,7 +44,5 @@ if __name__ == '__main__':
 
     graph = get_graph(config.get('graph'))
     pass
-    # calculator = Calculator(config)
-    # drawer = Drawer()
-    # calculator.run()
+    # graph.calculate('1', '17', 1)
     # drawer.run()
