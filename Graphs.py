@@ -2,7 +2,7 @@ import os
 
 import functions as func
 from Calculators import BaseCalculator, VMRkCalculator, MNRkCalculator, BaseTelnetCalculator
-from Paths import PathCollection
+from Paths import PathCollection, TNPathCollection
 
 
 class BaseGraph:
@@ -17,7 +17,7 @@ class BaseGraph:
 
 
     def __repr__(self):
-        return f'Graph(type={self.type}, nodes={self.nodes}, weighted={self.weighted})'
+        return f'BaseGraph(type={self.type}, nodes={self.nodes}, weighted={self.weighted})'
 
     def get_struct(self):
         return self.struct
@@ -125,7 +125,10 @@ class BaseTelNet(BaseGraph):
         super().__init__(config)
 
     def __repr__(self):
-        return f'TelNetGraph(type={self.type}, nodes={self.nodes}, weighted={self.weighted})'
+        return f'BaseTelNetGraph(type={self.type}, nodes={self.nodes}, weighted={self.weighted})'
 
     def get_weights(self):
         return list(map(float, self.edges.values()))
+
+    def calculate(self, start: str, goal: str, mass: float) -> TNPathCollection:
+        return BaseTelnetCalculator(self.struct, start, goal, mass).calculate()

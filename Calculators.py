@@ -37,7 +37,7 @@ class BaseTelnetCalculator(BaseCalculator):
 
         self.mass = mass
 
-    def calculate(self) -> PathCollection:
+    def calculate(self) -> TNPathCollection:
         '''
         DVPTN — Поиск вглубину всех путей в обычном взвешенном графе, функция выводит быстрейший путь из start в goal
         Функция ищет простой путь в обычном взвешенном графе с наименьшим временем передачи Пакета Виртуального Вызова от вершины start до goal.

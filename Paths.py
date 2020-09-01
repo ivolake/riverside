@@ -165,5 +165,5 @@ class TNPathCollection(PathCollection):
     def __init__(self, paths: List):
         super().__init__(paths)
 
-    def get_fastest(self) -> Path:
+    def get_fastest(self) -> TNPath:
         return min(self.paths, key=attrgetter('time'))
