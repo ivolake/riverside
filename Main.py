@@ -22,7 +22,7 @@ def get_graph(config: dict) -> BaseGraph:
     elif graph_type == 'mnrk_tb_telnet':
         pass
     else:
-        raise Exception('Wrong graph type declared in config')
+        raise Exception('В конфигурационном файле объявлен неверный тип графа.')
 
 
 def get_config(path):
