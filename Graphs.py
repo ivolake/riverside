@@ -16,6 +16,12 @@ class BaseGraph:
         self._nodes = None
         self._struct, self._weighted = self._extract_graph(self.config.get('path'), self.type)
 
+        self.calc_request = {
+            'graph': self.struct,
+            'start': '',
+            'goal': ''
+        }
+
     @property
     def struct(self):
         return self._struct
@@ -56,6 +62,11 @@ class BaseGraph:
     @weighted.setter
     def weighted(self, weighted):
         self._weighted = weighted
+
+    @property
+    def calculator(self):
+        return BaseCalculator(**self.calc_request)
+
 
 
 
@@ -118,8 +129,9 @@ class BaseGraph:
 
         return g, weighted
 
-    def calculate(self, start: str, goal: str) -> PathCollection:
-        return BaseCalculator(self.struct, start, goal).calculate()
+    def calculate(self, **kwargs) -> PathCollection:
+        self.calc_request.update(kwargs)
+        return self.calculator.calculate()
 
 class VMRkGraph(BaseGraph):
 
@@ -128,11 +140,21 @@ class VMRkGraph(BaseGraph):
 
         self.inc_nodes = config.get('options').get('inc_nodes')
 
+        self.calc_request = {
+            'graph': self.struct,
+            'start': '',
+            'goal': '',
+            'inc_nodes': self.inc_nodes,
+            'k': 0
+        }
+
+    @property
+    def calculator(self):
+        return VMRkCalculator(**self.calc_request)
+
     def __repr__(self):
         return f'VMRkGraph(type={self.type}, nodes={self.nodes}, inc_nodes={self.inc_nodes}, weighted={self.weighted})'
 
-    def calculate(self, start: str, goal: str, k: int) -> PathCollection:
-        return VMRkCalculator(self.struct, start, goal, self.inc_nodes, k).calculate()
 
 class MNRkGraph(BaseGraph):
 
@@ -142,51 +164,91 @@ class MNRkGraph(BaseGraph):
         self.inc_nodes = config.get('options').get('inc_nodes')
         self.dec_nodes = config.get('options').get('dec_nodes')
 
+        self.calc_request = {
+            'graph': self.struct,
+            'start': '',
+            'goal': '',
+            'inc_nodes': self.inc_nodes,
+            'dec_nodes': self.dec_nodes,
+            'k': 0
+        }
+
+    @property
+    def calculator(self):
+        return MNRkCalculator(**self.calc_request)
+
     def __repr__(self):
         return f'MNRkGraph(type={self.type}, nodes={self.nodes}, inc_nodes={self.inc_nodes}, dec_nodes={self.dec_nodes}, weighted={self.weighted})'
-
-    def calculate(self, start: str, goal: str, k: int) -> PathCollection:
-        return MNRkCalculator(self.struct, start, goal, self.inc_nodes, self.dec_nodes, k).calculate()
 
 class BaseTelNet(BaseGraph):
 
     def __init__(self, config):
         super().__init__(config)
 
-    def __repr__(self):
-        return f'BaseTelNetGraph(type={self.type}, nodes={self.nodes}, weighted={self.weighted})'
+        self.calc_request = {
+            'graph': self.struct,
+            'start': '',
+            'goal': '',
+            'mass': 0
+        }
+
+    @property
+    def calculator(self):
+        return BaseTelnetCalculator(**self.calc_request)
 
     @property
     def weights(self):
         return list(map(float, self.edges.values()))
 
-    def calculate(self, start: str, goal: str, mass: float) -> TNPathCollection:
-        return BaseTelnetCalculator(self.struct, start, goal, mass).calculate()
+    def __repr__(self):
+        return f'BaseTelNetGraph(type={self.type}, nodes={self.nodes}, weighted={self.weighted})'
 
-class VMRkTelNet(BaseTelNet):
+    def calculate(self, **kwargs) -> TNPathCollection:
+        self.calc_request.update(kwargs)
+        return self.calculator.calculate()
+
+class VMRkTelNet(BaseTelNet, VMRkGraph):
 
     def __init__(self, config):
-        super().__init__(config)
+        BaseTelNet.__init__(self, config)
+        VMRkGraph.__init__(self, config)
 
-        self.inc_nodes = config.get('options').get('inc_nodes')
+        self.calc_request = {
+            'graph': self.struct,
+            'start': '',
+            'goal': '',
+            'inc_nodes': self.inc_nodes,
+            'k': 0,
+            'mass': 0
+        }
+
+    @property
+    def calculator(self):
+        return VMRkTelNetCalculator(**self.calc_request)
 
     def __repr__(self):
         return f'VMRkTelNetGraph(type={self.type}, nodes={self.nodes}, inc_nodes={self.inc_nodes}, weighted={self.weighted})'
 
-    def calculate(self, start: str, goal: str, k: int) -> PathCollection:
-        return VMRkTelNetCalculator(self.struct, start, goal, self.inc_nodes, k, mass).calculate()
-
-class MNRkTelNet(BaseTelNet):
+class MNRkTelNet(BaseTelNet, MNRkGraph):
 
     def __init__(self, config):
-        super().__init__(config)
+        BaseTelNet.__init__(self, config)
+        MNRkGraph.__init__(self, config)
 
-        self.inc_nodes = config.get('options').get('inc_nodes')
+        self.calc_request = {
+            'graph': self.struct,
+            'start': '',
+            'goal': '',
+            'inc_nodes': self.inc_nodes,
+            'dec_nodes': self.dec_nodes,
+            'k': 0,
+            'mass': 0
+        }
+
+    @property
+    def calculator(self):
+        return MNRkTelNetCalculator(**self.calc_request)
 
     def __repr__(self):
-        return f'VMRkTelNetGraph(type={self.type}, nodes={self.nodes}, inc_nodes={self.inc_nodes}, weighted={self.weighted})'
+        return f'MNRkTelNetGraph(type={self.type}, nodes={self.nodes}, inc_nodes={self.inc_nodes}, dec_nodes={self.dec_nodes}, weighted={self.weighted})'
 
-    def calculate(self, start: str, goal: str, k: int, mass: float) -> PathCollection:
-        return MNRkTelNetCalculator(self.struct, start, goal, self.inc_nodes, self.dec_nodes, k, mass).calculate()
-
-# TODO: сделать отдельные атрибуты калькуляторов в классах графов

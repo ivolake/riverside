@@ -35,7 +35,7 @@ class BaseCalculator:
 
 class VMRkCalculator(BaseCalculator):
     def __init__(self, graph: dict, start: str, goal: str, inc_nodes: list, k: int):
-        super().__init__(graph, start, goal)
+        BaseCalculator.__init__(self, graph, start, goal)
 
         self.inc_nodes = inc_nodes
         self.k = k
@@ -68,7 +68,7 @@ class VMRkCalculator(BaseCalculator):
 
 class MNRkCalculator(BaseCalculator):
     def __init__(self, graph: dict, start: str, goal: str, inc_nodes: list, dec_nodes: list, k: int):
-        super().__init__(graph, start, goal)
+        BaseCalculator.__init__(self, graph, start, goal)
 
         self.inc_nodes = inc_nodes
         self.dec_nodes = dec_nodes
@@ -116,7 +116,7 @@ class MNRkCalculator(BaseCalculator):
 
 class BaseTelnetCalculator(BaseCalculator):
     def __init__(self, graph: dict, start: str, goal: str, mass: float):
-        super().__init__(graph, start, goal)
+        BaseCalculator.__init__(self, graph, start, goal)
 
         self.mass = mass
 

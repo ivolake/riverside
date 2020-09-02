@@ -1,7 +1,8 @@
 import argparse
 import sys
 import ruamel.yaml
-from Graphs import BaseGraph, VMRkGraph, MNRkGraph, BaseTelNet
+from Graphs import BaseGraph, VMRkGraph, MNRkGraph, BaseTelNet, VMRkTelNet, MNRkTelNet
+
 
 def get_graph(config: dict) -> BaseGraph:
     graph_type = config.get('type')
@@ -14,9 +15,9 @@ def get_graph(config: dict) -> BaseGraph:
     elif graph_type == 'telnet':
         return BaseTelNet(config)
     elif graph_type == 'vmrk_telnet':
-        pass
+        return VMRkTelNet(config)
     elif graph_type == 'mnrk_telnet':
-        pass
+        return MNRkTelNet(config)
     elif graph_type == 'vmrk_tb_telnet':
         pass
     elif graph_type == 'mnrk_tb_telnet':
@@ -44,5 +45,8 @@ if __name__ == '__main__':
 
     graph = get_graph(config.get('graph'))
     pass
-    # graph.calculate('1', '17', 1)
+    graph.calculate(start='1', goal='14', mass=200, k=200)
+    #TODO: создать отдельный класс vmrk путей (и их взвешенных аналогов) и отдельный класс их коллекций, так
+    # как у таких путей может быть разный i. Протестировать работу на k=200
+
     # drawer.run()
