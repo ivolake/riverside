@@ -76,7 +76,7 @@ class Path(List):
 
 class TNPath(Path):
     def __init__(self, path: List, time: float):
-        super().__init__(path)
+        Path.__init__(self, path)
         if time is None:
             self.time = 0
         else:
@@ -84,6 +84,25 @@ class TNPath(Path):
 
     def __repr__(self):
         return f'{self.path},\n\ttime: {self.time:.3f}'
+
+class VMRkPath(Path):
+    def __init__(self, path: List, i: int):
+        Path.__init__(self, path)
+        if i is None:
+            self.i = 0
+        else:
+            self.i = i
+
+    def __repr__(self):
+        return f'{self.path},\n\ti: {self.i}'
+
+class VMRkTNPath(VMRkPath, TNPath):
+    def __init__(self, path: List, i: int, time: float):
+        VMRkPath.__init__(self, path, i)
+        TNPath.__init__(self, path, time)
+
+    def __repr__(self):
+        return f'{self.path},\n\ti: {self.i},\n\ttime: {self.time:.3f}'
 
 
 class PathCollection(List):
@@ -163,7 +182,36 @@ class PathCollection(List):
 
 class TNPathCollection(PathCollection):
     def __init__(self, paths: List):
-        super().__init__(paths)
+        PathCollection.__init__(self, paths)
 
     def get_fastest(self) -> TNPath:
         return min(self.paths, key=attrgetter('time'))
+
+class VMRkPathCollection(PathCollection):
+    def __init__(self, paths: List):
+        PathCollection.__init__(self, paths)
+
+    def get_path_of_smallest_magnitude(self) -> TNPath:
+        return min(self.paths, key=attrgetter('i'))
+
+    def get_path_of_biggest_magnitude(self) -> TNPath:
+        return max(self.paths, key=attrgetter('i'))
+
+    def get_magnitudes_distribution(self):
+        N = len(self.paths)
+        magnitudes_distribution = dict()
+        for path in self.paths:
+            if path.i not in magnitudes_distribution.keys():
+                magnitudes_distribution.update({path.i: 1})
+            else:
+                magnitudes_distribution[path.i] += 1
+
+        for k in magnitudes_distribution:
+            magnitudes_distribution[k] /= N
+
+        return magnitudes_distribution
+
+class VMRkTNPathCollection(VMRkPathCollection, TNPathCollection):
+    def __init__(self, paths: List):
+        VMRkPathCollection.__init__(self, paths)
+        TNPathCollection.__init__(self, paths)
