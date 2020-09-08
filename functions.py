@@ -1,6 +1,59 @@
 from collections import Iterable
+from typing import Tuple
 
-def generate_separate_graph_and_weights(g: dict) -> (dict, dict):
+
+def generate_pos(g: dict) -> dict:
+    '''
+    Создает позиции для вершин графа в виде вытянутого шестиугольнка
+    '''
+    positions = dict()
+    V = list(g.keys())
+    l_V = len(V)
+    x = 0
+    y = 3
+    positions.update({V[0]: [x, y]})
+
+    if (l_V % 2 != 0): # если количество вершин нечетно то:
+        p = 1
+    else:
+        p = 0
+
+    for i in range(1, l_V - p):
+        X = x + ((i+1) // 2) - 0.2
+        if (i % 2 == 1):
+            if ((i+3) % 4 == 0):
+                Y =  2 - ((i - (l_V - p) // 2) ** 2 - (l_V - p) ** 2 // 4 - 0.3) * 0.25 + 3 # или вместо 3 5*random.ranf() + 10
+            else:
+                Y =  2 - ((i - (l_V - p) // 2) ** 2 - (l_V - p) ** 2 // 4 - 0.3) * 0.25 - 3
+        else:
+            if (i % 4 == 0):
+                Y =  -2 + ((i - (l_V - p) // 2) ** 2  - (l_V - p) ** 2 // 4) * 0.25 + 3
+            else:
+                Y =  -2 + ((i - (l_V - p) // 2) ** 2  - (l_V - p) ** 2 // 4) * 0.25 - 3 # умное распределние высот по параболе (бизигзапарабольное распределение)
+
+        positions.update({V[i]: [X, Y]})
+
+
+        # positions.update({V[i]: [x + ((i+1) // 2), y + ( (2) if (i % 2 == 1) else (-2)) ]}) # если i четный, то прибавляем -2, нечетный -- +2
+        # positions.update({V[i]: [x + ((i+1) // 2), y + (   ( 2 - (abs(i - (l_V - p) // 2) - (l_V - p) // 2) * 0.25 ) if (i % 2 == 1)     else (-2 + (abs(i - (l_V - p) // 2) - (l_V - p) // 2) * 0.25 )   ) ]}) # умное распределние высот по графику модуля
+    if (p == 1):
+        positions.update({V[l_V-2]: [x + l_V // 2, y]})
+        positions.update({V[l_V-1]: [x + l_V // 2 + 1, y]})
+    else:
+        positions.update({V[l_V-1]: [x + l_V // 2, y]})
+
+    return positions
+
+def generate_path_edges(p: list) -> list:
+    '''
+    Превращает список вершин в список ребер
+    '''
+    result = []
+    for i in range(0,len(p)-1):
+        result.append((p[i],p[i+1]))
+    return result
+
+def generate_separate_graph_and_weights(g: dict) -> Tuple[dict, dict]:
     '''
     Функция для взвешенных графов, которая рабивает такой граф на невзвешенный граф и словарь с ребрами и их весами
     Пример:
@@ -54,11 +107,11 @@ def generate_separate_graph_and_weights(g: dict) -> (dict, dict):
         neighbours = []
         for vj in list(g[vi].keys()):      # иду по соседям vi
             neighbours.append(vj)
-            edges_with_labels.update({(vi, vj): str(g[vi][vj])})
+            edges_with_labels.update({(vi,vj) : str(g[vi][vj])})
 
-        new_g.update({vi: neighbours})
+        new_g.update({vi:neighbours})
 
-    return new_g, edges_with_labels
+    return((new_g, edges_with_labels))
 
 def deweight(graph: dict) -> Iterable:
     """
