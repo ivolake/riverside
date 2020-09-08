@@ -1,4 +1,3 @@
-from collections import Iterable
 from operator import attrgetter
 from typing import List, Iterator
 
@@ -38,15 +37,19 @@ class Path(List):
         return item in self.path
 
     def __add__(self, other):
+        # return self.__class__(self.path + other)
         return Path(self.path + other)
 
     def __iadd__(self, other):
+        # return self.__class__(self.path + other)
         return Path(self.path + other)
 
     def __mul__(self, other):
+        # return self.__class__(self.path * other)
         return Path(self.path * other)
 
     def __imul__(self, other):
+        # return self.__class__(self.path * other)
         return Path(self.path * other)
 
     def __eq__(self, other) -> bool:
@@ -83,9 +86,12 @@ class TNPath(Path):
             self.time = time
 
     def __repr__(self):
-        return f'{self.path},\n\ttime: {self.time:.3f}'
+        return f'{self.path},\n   time: {self.time:.3f}'
 
-class VMRkPath(Path):
+class MPath(Path):
+    """
+    Magnited Path - Path with magnitude
+    """
     def __init__(self, path: List, i: int):
         Path.__init__(self, path)
         if i is None:
@@ -94,15 +100,15 @@ class VMRkPath(Path):
             self.i = i
 
     def __repr__(self):
-        return f'{self.path},\n\ti: {self.i}'
+        return f'{self.path},\n   i: {self.i}'
 
-class VMRkTNPath(VMRkPath, TNPath):
+class TNMPath(MPath, TNPath):
     def __init__(self, path: List, i: int, time: float):
-        VMRkPath.__init__(self, path, i)
+        MPath.__init__(self, path, i)
         TNPath.__init__(self, path, time)
 
     def __repr__(self):
-        return f'{self.path},\n\ti: {self.i},\n\ttime: {self.time:.3f}'
+        return f'{self.path},\n   i: {self.i},\n   time: {self.time:.3f}'
 
 
 class PathCollection(List):
@@ -179,6 +185,9 @@ class PathCollection(List):
     def get_shortest(self) -> Path:
         return min(self.paths, key=len)
 
+    def get_longest(self) -> Path:
+        return max(self.paths, key=len)
+
 
 class TNPathCollection(PathCollection):
     def __init__(self, paths: List):
@@ -187,14 +196,17 @@ class TNPathCollection(PathCollection):
     def get_fastest(self) -> TNPath:
         return min(self.paths, key=attrgetter('time'))
 
-class VMRkPathCollection(PathCollection):
+    def get_slowest(self) -> TNPath:
+        return max(self.paths, key=attrgetter('time'))
+
+class MPathCollection(PathCollection):
     def __init__(self, paths: List):
         PathCollection.__init__(self, paths)
 
-    def get_path_of_smallest_magnitude(self) -> TNPath:
+    def get_path_of_smallest_magnitude(self) -> TNMPath:
         return min(self.paths, key=attrgetter('i'))
 
-    def get_path_of_biggest_magnitude(self) -> TNPath:
+    def get_path_of_biggest_magnitude(self) -> TNMPath:
         return max(self.paths, key=attrgetter('i'))
 
     def get_magnitudes_distribution(self):
@@ -211,7 +223,7 @@ class VMRkPathCollection(PathCollection):
 
         return magnitudes_distribution
 
-class VMRkTNPathCollection(VMRkPathCollection, TNPathCollection):
+class TNMPathCollection(MPathCollection, TNPathCollection):
     def __init__(self, paths: List):
-        VMRkPathCollection.__init__(self, paths)
+        MPathCollection.__init__(self, paths)
         TNPathCollection.__init__(self, paths)

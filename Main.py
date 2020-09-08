@@ -45,8 +45,6 @@ if __name__ == '__main__':
 
     graph = get_graph(config.get('graph'))
     pass
-    graph.calculate(start='1', goal='14', mass=200, k=200)
-    #TODO: создать отдельный класс vmrk путей (и их взвешенных аналогов) и отдельный класс их коллекций, так
-    # как у таких путей может быть разный i. Протестировать работу на k=200
+    graph.calculate_total(start='1', goal='14', mass=12)
 
     # drawer.run()

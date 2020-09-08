@@ -1,9 +1,9 @@
 import os
 
 import functions as func
-from Calculators import BaseCalculator, VMRkCalculator, MNRkCalculator, BaseTelnetCalculator, VMRkTelNetCalculator, \
+from Calculators import BaseCalculator, VMRkCalculator, MNRkCalculator, BaseTelNetCalculator, VMRkTelNetCalculator, \
     MNRkTelNetCalculator
-from Paths import PathCollection, TNPathCollection
+from Paths import PathCollection, TNPathCollection, TNMPathCollection
 
 
 class BaseGraph:
@@ -136,9 +136,10 @@ class BaseGraph:
 class VMRkGraph(BaseGraph):
 
     def __init__(self, config):
-        super().__init__(config)
+        BaseGraph.__init__(self, config)
 
         self.inc_nodes = config.get('options').get('inc_nodes')
+        self.inc_nodes = list(map(str, self.inc_nodes))
 
         self.calc_request = {
             'graph': self.struct,
@@ -159,10 +160,12 @@ class VMRkGraph(BaseGraph):
 class MNRkGraph(BaseGraph):
 
     def __init__(self, config):
-        super().__init__(config)
+        BaseGraph.__init__(self, config)
 
         self.inc_nodes = config.get('options').get('inc_nodes')
+        self.inc_nodes = list(map(str, self.inc_nodes))
         self.dec_nodes = config.get('options').get('dec_nodes')
+        self.dec_nodes = list(map(str, self.dec_nodes))
 
         self.calc_request = {
             'graph': self.struct,
@@ -183,7 +186,7 @@ class MNRkGraph(BaseGraph):
 class BaseTelNet(BaseGraph):
 
     def __init__(self, config):
-        super().__init__(config)
+        BaseGraph.__init__(self, config)
 
         self.calc_request = {
             'graph': self.struct,
@@ -194,7 +197,7 @@ class BaseTelNet(BaseGraph):
 
     @property
     def calculator(self):
-        return BaseTelnetCalculator(**self.calc_request)
+        return BaseTelNetCalculator(**self.calc_request)
 
     @property
     def weights(self):
@@ -248,6 +251,11 @@ class MNRkTelNet(BaseTelNet, MNRkGraph):
     @property
     def calculator(self):
         return MNRkTelNetCalculator(**self.calc_request)
+
+    def calculate_total(self, **kwargs) -> TNMPathCollection:
+        self.calc_request.update(kwargs)
+        return self.calculator.calculate_total()
+
 
     def __repr__(self):
         return f'MNRkTelNetGraph(type={self.type}, nodes={self.nodes}, inc_nodes={self.inc_nodes}, dec_nodes={self.dec_nodes}, weighted={self.weighted})'
