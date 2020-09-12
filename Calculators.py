@@ -41,7 +41,7 @@ class VMRkCalculator(BaseCalculator):
         self.inc_nodes = inc_nodes
         self.k = k
 
-    def calculate(self) -> PathCollection:
+    def calculate(self) -> MPathCollection:
         """
         Depth-First Search — Поиск вглубину, функция выводит все пути в графе типа VMRk из start в goal
         Функция ищет VMRk пути от вершины start до goal
