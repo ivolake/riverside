@@ -6,7 +6,7 @@ from Graphs import BaseGraph, VMRkGraph, MNRkGraph, BaseTelNet, VMRkTelNet, MNRk
 
 def get_graph(config: dict) -> BaseGraph:
     graph_type = config.get('type')
-    if graph_type == 'simple':
+    if graph_type == 'standard':
         return BaseGraph(config)
     elif graph_type == 'vmrk':
         return VMRkGraph(config)
@@ -45,6 +45,6 @@ if __name__ == '__main__':
 
     graph = get_graph(config.get('graph'))
     pass
-    graph.calculate_total(start='1', goal='14', mass=12)
+    # graph.calculate_total(start='1', goal='14', mass=12)
 
     # drawer.run()

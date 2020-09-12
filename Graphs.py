@@ -3,6 +3,7 @@ import os
 import functions as func
 from Calculators import BaseCalculator, VMRkCalculator, MNRkCalculator, BaseTelNetCalculator, VMRkTelNetCalculator, \
     MNRkTelNetCalculator
+from Drawers import BaseDrawer
 from Paths import PathCollection, TNPathCollection, TNMPathCollection
 
 
@@ -20,6 +21,14 @@ class BaseGraph:
             'graph': self.struct,
             'start': '',
             'goal': ''
+        }
+
+        self.draw_request = {
+            'graph': self.struct,
+            'paths': '',
+            'filename': '',
+            'ipos': '',
+            'show': ''
         }
 
     @property
@@ -50,7 +59,7 @@ class BaseGraph:
 
     @property
     def weighted(self):
-        # if self.type in ['simple', 'vmrk', 'mnrk']:
+        # if self.type in ['standard', 'vmrk', 'mnrk']:
         #     self._weighted = False
         # elif self.type in ['telnet', 'vmrk_telnet', 'mnrk_telnet', 'vmrk_tb_telnet']:
         #     self._weighted = False
@@ -63,15 +72,19 @@ class BaseGraph:
     def weighted(self, weighted):
         self._weighted = weighted
 
+
+    @property
+    def drawer(self):
+        return BaseDrawer(**self.draw_request)
+
     @property
     def calculator(self):
         return BaseCalculator(**self.calc_request)
 
-
-
-
     def __repr__(self):
         return f'BaseGraph(type={self.type}, nodes={self.nodes}, weighted={self.weighted})'
+
+
 
     @staticmethod
     def _extract_graph(name, graph_type):
@@ -117,14 +130,14 @@ class BaseGraph:
                     neighbours.update({str(nodes[j]): matrix[i][j]})
             g.update({str(nodes[i]): neighbours})
 
-        if graph_type in ['simple', 'vmrk', 'mnrk'] and weighted:
+        if graph_type in ['standard', 'vmrk', 'mnrk'] and weighted:
             print('В файле содержится взвешенный граф, но указанный тип подразумевает отсутствие весов на графе. Граф будет считан, как невзвешанный')
             g = func.deweight(g)
             weighted = False
-        elif graph_type in ['simple', 'vmrk', 'mnrk'] and not weighted:
+        elif graph_type in ['standard', 'vmrk', 'mnrk'] and not weighted:
             g = func.deweight(g)
             weighted = False
-        elif graph_type not in ['simple', 'vmrk', 'mnrk'] and not weighted:
+        elif graph_type not in ['standard', 'vmrk', 'mnrk'] and not weighted:
             print('В файле содержится невзвешенный граф, но указанный тип подразумевает наличие весов у графа. Граф будет считан, как невзвешанный')
 
         return g, weighted
@@ -132,6 +145,14 @@ class BaseGraph:
     def calculate(self, **kwargs) -> PathCollection:
         self.calc_request.update(kwargs)
         return self.calculator.calculate()
+
+    def draw_graph(self, **kwargs):
+        self.draw_request.update(kwargs)
+        self.drawer.draw_graph()
+
+    def draw_graph_with_paths(self, **kwargs):
+        self.draw_request.update(kwargs)
+        self.drawer.draw_graph_with_paths()
 
 class VMRkGraph(BaseGraph):
 

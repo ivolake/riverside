@@ -1,13 +1,17 @@
+from typing import Tuple
+
 import matplotlib.pyplot as plt
 import networkx as nx
 from numpy import random
 # from random import randint
 import os
 
+from DrawersSupport import PlaneGraphParams, TextBoxParams
 from Graphs import BaseGraph
 from Paths import PathCollection, MPathCollection
 from config import OUTPUT_PATH
 from functions import generate_separate_graph_and_weights, generate_pos, generate_path_edges
+
 
 
 class BaseDrawer():
@@ -20,6 +24,45 @@ class BaseDrawer():
         if dec_nodes is not None:
             self.dec_nodes = dec_nodes
 
+        self.dpi = 100
+
+        self.plane_graph_params = PlaneGraphParams(nodes_count=self.nodes_count)
+
+        self.standard_nodes_color = '#949494'
+        self.inc_nodes_color = '#5dff4f'
+        self.dec_nodes_color = '#fc2a2a'
+
+        self.edges_neutral_color = 'black'
+        self.edges_neutral_width = 1
+
+        self.edges_label_bbox = {
+            'facecolor': '#ffffff',
+            'edgecolor': '#ffffff',
+            'alpha': 0.6,
+            'pad': 0}
+
+        self.weights_label_pos = 0.4 # или (0.5 * random.ranf() + 0.25)
+        self.weights_font_size = 15
+
+        self.node_shape = 's'
+        self.node_size = 400
+        self.node_font_size = 16
+        self.node_neutral_color = '#949494'
+
+        self.font_family = 'sans-serif'
+        self.font_weight = 'bold'
+
+        self.first_path_hex_color = '0x08e822'
+        self.path_edges_width = 2.5
+
+
+    @property
+    def nodes_count(self):
+        return len(self.graph.nodes)
+
+    @property
+    def figure_size(self) -> Tuple[int, int]:
+        return (int(13 * self.nodes_count / 8), int(7 * self.nodes_count / 8))
 
     def draw_graph(self, file_name: str = None, ipos: int = 0, show: bool = True):
         """
@@ -31,20 +74,17 @@ class BaseDrawer():
         #  Переделать большую draw_graph в множество функций, чтобы исключить многократное повторение кода
 
         (raw_graph, edges_labels) = generate_separate_graph_and_weights(self.graph.struct)  # превращаю взвешенный граф в
-                                                                                       # читабельный для программы вид
+        # читабельный для программы вид
 
-        # TODO: сделать figure_size через @property (figure_size кладется в figsize, а нынешний figure_size
-        #  переименовывается в nodes_count)
-        figure_size = len(raw_graph.keys())
         G = nx.DiGraph(raw_graph)  # создаю граф из образа digraph
-        fig = plt.figure(figsize=(int(13 * figure_size / 11), int(7 * figure_size / 11)),
-                         dpi=100)  # для  сохранения картинки с помощью fig.savefig()
+        fig = plt.figure(figsize=self.plane_graph_params.figure_size, # здесь деление на 11, а не на 8, как в осталных
+                         dpi=self.dpi)  # для  сохранения картинки с помощью fig.savefig()
         # Size in pixels = figsize * dpi
 
         # в этом сегменте я задаю всем вершинам цвета,и некоторым в частности. Создаю списки с вершинами и их цветами
-        G.add_nodes_from(G.nodes, color='#949494')  # brcmyk - colors
-        G.add_nodes_from(self.inc_nodes, color='#5dff4f')
-        G.add_nodes_from(self.dec_nodes, color='#fc2a2a')
+        G.add_nodes_from(G.nodes, color=self.standard_nodes_color)  # brcmyk - colors
+        G.add_nodes_from(self.inc_nodes, color=self.inc_nodes_color)
+        G.add_nodes_from(self.dec_nodes, color=self.dec_nodes_color)
         # G.add_node(path[0],color='green')                     # окрашиваю первую вершину пути в зеленый
         # G.add_node(path[len(path)-1],color='blue')            # окрашиваю последнюю вершину пути в синий
         node_color_attr = nx.get_node_attributes(G, 'color')
@@ -52,7 +92,7 @@ class BaseDrawer():
         nodes_colors = list(node_color_attr.values())  # без list() не работает в рисовалке
 
         # в этом сегменте я задаю всем ребрам цвета,и некоторым в частности. Создаю списки с ребрами и их цветами
-        G.add_edges_from(G.edges, color='black', width=1)  # добавляем все ребра черными
+        G.add_edges_from(G.edges, color=self.edges_neutral_color, width=self.edges_neutral_width)  # добавляем все ребра черными
 
         edge_color_attr = nx.get_edge_attributes(G, 'color')
         edge_width_attr = nx.get_edge_attributes(G, 'width')
@@ -73,16 +113,15 @@ class BaseDrawer():
         # рисование
         nx.draw(G, pos=pos,
                 edgelist=edges, edge_color=edges_colors, width=edges_widths,
-                nodelist=nodes, node_color=nodes_colors, node_shape='s',
-                node_size=450, font_size=16, font_family='sans-serif',
-                with_labels=True, font_weight='bold')
+                nodelist=nodes, node_color=nodes_colors, node_shape=self.node_shape,
+                node_size=self.plane_graph_params.node_size, font_size=self.plane_graph_params.node_font_size,
+                font_family=self.font_family, with_labels=True, font_weight=self.font_weight)
         # fig.savefig() сохраняет, понятное дело
 
-        if edges_labels != list():
+        if edges_labels:
             # рисую значения весов на графе
-            nx.draw_networkx_edge_labels(G, pos=pos, edge_labels=edges_labels, label_pos=0.4, font_size=15,
-                                         bbox={'facecolor': '#ffffff', 'edgecolor': '#ffffff', 'alpha': 0.6,
-                                               'pad': 0})  # label_pos = (0.5 * random.ranf() + 0.25)
+            nx.draw_networkx_edge_labels(G, pos=pos, edge_labels=edges_labels, label_pos=self.weights_label_pos,
+                                         font_size=self.weights_font_size, bbox=self.edges_label_bbox)
 
         if file_name:
             fig.savefig(OUTPUT_PATH.format(file_name))
@@ -96,29 +135,25 @@ class BaseDrawer():
             '''
         # ---------------------DRAWING---------------------
         G = nx.DiGraph(self.graph.struct)  # создаю граф из образа graph
-        figure_size = len(self.graph.struct.keys())
-
-        fig = plt.figure(figsize=(int(13 * figure_size / 8), int(7 * figure_size / 8)),
+        fig = plt.figure(figsize=self.figure_size,
                          dpi=100)  # для  сохранения картинки с помощью fig.savefig()
 
-        paths_string = '{'
 
-        L = len(paths) if len(paths) <= 10 else 10
-
-        for i in range(0, L):
-            if i != L - 1:
-                paths_string += str(paths[i]) + ', ' + '\n' * (i % 2)
-            else:
-                paths_string += str(paths[i]) + '\n}'
-
-        digraph_info = ('Paths: {0}\nReachability type: Standart digraph'.format(paths_string))
 
         ax = fig.add_subplot(111)  # добавляю текстовый бокс в окно
-        ax.text(-0.14, 0.03 + 0.012 * len(paths), digraph_info, fontname='sans-serif', fontstyle='normal', fontsize=15,
-                verticalalignment='top', horizontalalignment='left',
-                transform=ax.transAxes, bbox={'facecolor': '#89ebf1', 'alpha': 0.7, 'pad': 5})  # pad - размер
+
+        text_box_params = TextBoxParams(paths=paths, graph_info={
+            'graph_type': self.graph.type
+        })
+
+        ax.text(text_box_params.x, text_box_params.y, text_box_params.digraph_info, fontname=self.font_family,
+                fontstyle=text_box_params.fontstyle, fontsize=text_box_params.fontsize,
+                verticalalignment=text_box_params.vertical_alignment,
+                horizontalalignment=text_box_params.horizontal_alignment,
+                transform=ax.transAxes, bbox=text_box_params.bbox)  # pad - размер
+
         # в этом сегменте я задаю всем вершинам цвета,и некоторым в частности. Создаю списки с вершинами и их цветами
-        G.add_nodes_from(G.nodes, color='#949494')  # brcmyk - colors
+        G.add_nodes_from(G.nodes, color=self.node_neutral_color)  # brcmyk - colors
         # G.add_node(path[0],color='green')                     # окрашиваю первую вершину пути в зеленый
         # G.add_node(path[len(path)-1],color='blue')            # окрашиваю последнюю вершину пути в синий
         node_color_attr = nx.get_node_attributes(G, 'color')
@@ -126,17 +161,18 @@ class BaseDrawer():
         nodes_colors = list(node_color_attr.values())  # без list() не работает в рисовалке
 
         # в этом сегменте я задаю всем ребрам цвета,и некоторым в частности. Создаю списки с ребрами и их цветами
-        G.add_edges_from(G.edges, color='black', width=1)  # сначала добавляем все ребра черными
+        G.add_edges_from(G.edges, color=self.edges_neutral_color, width=self.edges_neutral_width)  # сначала добавляем все ребра черными
 
-        dec_color = int('0x08e822', base=16)
+        dec_color = int(self.first_path_hex_color, base=16) # из формата '0xffffff' в '#ffffff'
         for p in paths:  # здесь добавляем все пути в виде последовательности ребер в объект графа
             path_edges = generate_path_edges(p)  # превращаю последовательность вершин в последовательность ребер
             hex_color = '#0' + hex(dec_color)[2:]
             if len(hex_color) > 7:
                 hex_color = '#' + hex(dec_color)[2:]
             G.add_edges_from(path_edges, color=hex_color,
-                             width=2.5)  # заново добавляю в граф списки ребер в путях другими цветами
-            dec_color += 100 * random.randint(1, 500)  # новый цвет для каждого пути в формате #f032ae
+                             width=self.path_edges_width)  # заново добавляю в граф списки ребер в путях другими цветами
+            dec_color += 100 * random.randint(1, 500)  # новый цвет для каждого пути в формате #f032ae (десятичный вид
+                                                       # используется для обеспечения ротации цветов)
 
         edge_color_attr = nx.get_edge_attributes(G, 'color')
         edge_width_attr = nx.get_edge_attributes(G, 'width')
@@ -157,9 +193,9 @@ class BaseDrawer():
         # рисование
         nx.draw(G, pos=pos,
                 edgelist=edges, edge_color=edges_colors, width=edges_widths,
-                nodelist=nodes, node_color=nodes_colors, node_shape='s',
-                node_size=400, font_size=16, font_family='sans-serif',
-                with_labels=True, font_weight='bold')
+                nodelist=nodes, node_color=nodes_colors, node_shape=self.node_shape,
+                node_size=self.node_size, font_size=self.node_font_size,
+                font_family=self.font_family, with_labels=True, font_weight=self.font_weight)
         # fig.savefig() сохраняет, понятное дело
 
         if file_name:
@@ -178,29 +214,23 @@ class VMRkDrawer(BaseDrawer):
 
     def draw_graph_with_paths(self, paths: MPathCollection, file_name: str = None, ipos: int = 0, show: bool = True):
         G = nx.DiGraph(self.graph.struct)  # создаю граф из образа graph
-        figure_size = len(self.graph.struct.keys())
-        fig = plt.figure(figsize=(int(13 * figure_size / 8), int(7 * figure_size / 8)),
-                         dpi=100)  # для  сохранения картинки с помощью fig.savefig()
+        fig = plt.figure(figsize=self.figure_size,
+                         dpi=self.dpi)  # для  сохранения картинки с помощью fig.savefig()
 
-        paths_string = '{'
-        L = len(paths) if len(paths) <= 10 else 10
-        for i in range(0, L):
-            if i != L - 1:
-                paths_string += str(paths[i]) + ', ' + '\n' * (i % 2)
-            else:
-                paths_string += str(paths[i]) + '\n}'
-
-        digraph_info = ('Paths: {0}\nReachability type: VMR of k degree\nk = {1}'.format(paths_string,
-                                                                                         self.graph.calc_request.get('k')))
-
+        text_box_params = TextBoxParams(paths=paths, graph_info={
+            'graph_type': self.graph.type,
+            'k': self.graph.calc_request.get('k')
+        })
         ax = fig.add_subplot(111)  # добавляю текстовый бокс в окно
-        ax.text(-0.14, 0.03 + 0.012 * len(paths), digraph_info, fontname='sans-serif', fontstyle='normal', fontsize=15,
-                verticalalignment='top', horizontalalignment='left',
-                transform=ax.transAxes, bbox={'facecolor': '#89ebf1', 'alpha': 0.7, 'pad': 5})  # pad - размер
+        ax.text(text_box_params.x, text_box_params.y, text_box_params.digraph_info, fontname=self.font_family,
+                fontstyle=text_box_params.fontstyle, fontsize=text_box_params.fontsize,
+                verticalalignment=text_box_params.vertical_alignment,
+                horizontalalignment=text_box_params.horizontal_alignment,
+                transform=ax.transAxes, bbox=text_box_params.bbox)  # pad - размер
 
         # в этом сегменте я задаю всем вершинам цвета,и некоторым в частности. Создаю списки с вершинами и их цветами
-        G.add_nodes_from(G.nodes, color='#949494')  # brcmyk - colors
-        G.add_nodes_from(self.inc_nodes, color='#5dff4f')
+        G.add_nodes_from(G.nodes, color=self.node_neutral_color)  # brcmyk - colors
+        G.add_nodes_from(self.inc_nodes, color=self.inc_nodes_color)
 
         # G.add_node(path[0],color='green')                     # окрашиваю первую вершину пути в зеленый
         # G.add_node(path[len(path)-1],color='blue')            # окрашиваю последнюю вершину пути в синий
@@ -209,15 +239,15 @@ class VMRkDrawer(BaseDrawer):
         nodes_colors = list(node_color_attr.values())  # без list() не работает в рисовалке
 
         # в этом сегменте я задаю всем ребрам цвета,и некоторым в частности. Создаю списки с ребрами и их цветами
-        G.add_edges_from(G.edges, color='black', width=1)  # сначала добавляем все ребра черными
-        dec_color = int('0x08e822', base=16)  # началный цвет для добавочных ребер
+        G.add_edges_from(G.edges, color=self.edges_neutral_color, width=self.edges_neutral_width)  # сначала добавляем все ребра черными
+        dec_color = int(self.first_path_hex_color, base=16)  # началный цвет для добавочных ребер
         for p in paths:  # здесь добавляем все пути в виде последовательности ребер в объект графа
             path_edges = generate_path_edges(p)  # превращаю последовательность вершин в последовательность ребер
             hex_color = '#0' + hex(dec_color)[2:]
             if len(hex_color) > 7:
                 hex_color = '#' + hex(dec_color)[2:]
             G.add_edges_from(path_edges, color=hex_color,
-                             width=2.5)  # заново добавляю в граф списки ребер в путях другими цветами
+                             width=self.path_edges_width)  # заново добавляю в граф списки ребер в путях другими цветами
             dec_color += 100 * random.randint(1, 500)  # новый цвет для каждого пути в формате #f032ae
 
         edge_color_attr = nx.get_edge_attributes(G, 'color')
@@ -239,9 +269,9 @@ class VMRkDrawer(BaseDrawer):
         # рисование
         nx.draw(G, pos=pos,
                 edgelist=edges, edge_color=edges_colors, width=edges_widths,
-                nodelist=nodes, node_color=nodes_colors, node_shape='s',
-                node_size=400, font_size=16, font_family='sans-serif',
-                with_labels=True, font_weight='bold')
+                nodelist=nodes, node_color=nodes_colors, node_shape=self.node_shape,
+                node_size=self.node_size, font_size=self.node_font_size, font_family=self.font_family,
+                with_labels=True, font_weight=self.font_weight)
 
         # fig.savefig() сохраняет, понятное дело
 
