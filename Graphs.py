@@ -3,7 +3,7 @@ import os
 import functions as func
 from Calculators import BaseCalculator, VMRkCalculator, MNRkCalculator, BaseTelNetCalculator, VMRkTelNetCalculator, \
     MNRkTelNetCalculator
-from Drawers import BaseDrawer
+from Drawers import BaseDrawer, MNRkDrawer, VMRkDrawer, VMRkTelNetDrawer, BaseTelNetDrawer, MNRkTelNetDrawer
 from Paths import PathCollection, TNPathCollection, TNMPathCollection
 
 
@@ -30,6 +30,9 @@ class BaseGraph:
             'ipos': '',
             'show': ''
         }
+
+    def __repr__(self):
+        return f'BaseGraph(type={self.type}, nodes={self.nodes}, weighted={self.weighted})'
 
     @property
     def struct(self):
@@ -75,15 +78,11 @@ class BaseGraph:
 
     @property
     def drawer(self):
-        return BaseDrawer(**self.draw_request)
+        return BaseDrawer(graph=self)
 
     @property
     def calculator(self):
-        return BaseCalculator(**self.calc_request)
-
-    def __repr__(self):
-        return f'BaseGraph(type={self.type}, nodes={self.nodes}, weighted={self.weighted})'
-
+        return BaseCalculator(graph=self.struct)
 
 
     @staticmethod
@@ -131,28 +130,30 @@ class BaseGraph:
             g.update({str(nodes[i]): neighbours})
 
         if graph_type in ['standard', 'vmrk', 'mnrk'] and weighted:
-            print('В файле содержится взвешенный граф, но указанный тип подразумевает отсутствие весов на графе. Граф будет считан, как невзвешанный')
+            print(
+                'В файле содержится взвешенный граф, но указанный тип подразумевает отсутствие весов на графе. Граф будет считан, как невзвешанный')
             g = func.deweight(g)
             weighted = False
         elif graph_type in ['standard', 'vmrk', 'mnrk'] and not weighted:
             g = func.deweight(g)
             weighted = False
         elif graph_type not in ['standard', 'vmrk', 'mnrk'] and not weighted:
-            print('В файле содержится невзвешенный граф, но указанный тип подразумевает наличие весов у графа. Граф будет считан, как невзвешанный')
+            print(
+                'В файле содержится невзвешенный граф, но указанный тип подразумевает наличие весов у графа. Граф будет считан, как невзвешанный')
 
         return g, weighted
 
-    def calculate(self, **kwargs) -> PathCollection:
-        self.calc_request.update(kwargs)
-        return self.calculator.calculate()
+    def calculate(self,start: str, goal: str, **kwargs) -> PathCollection:
+        return self.calculator.calculate(start, goal, **kwargs)
 
-    def draw_graph(self, **kwargs):
-        self.draw_request.update(kwargs)
-        self.drawer.draw_graph()
+    def calculate_total(self, start, goal, mass) -> TNMPathCollection:
+        return self.calculator.calculate_total(start, goal, mass)
 
-    def draw_graph_with_paths(self, **kwargs):
-        self.draw_request.update(kwargs)
-        self.drawer.draw_graph_with_paths()
+    def draw_graph(self, file_name: str = None, ipos: int = 0, show: bool = True):
+        self.drawer.draw_graph(file_name, ipos, show)
+
+    def draw_graph_with_paths(self, paths: PathCollection, file_name: str = None, ipos: int = 0, show: bool = True):
+        self.drawer.draw_graph_with_paths(paths, file_name, ipos, show)
 
 class VMRkGraph(BaseGraph):
 
@@ -162,17 +163,13 @@ class VMRkGraph(BaseGraph):
         self.inc_nodes = config.get('options').get('inc_nodes')
         self.inc_nodes = list(map(str, self.inc_nodes))
 
-        self.calc_request = {
-            'graph': self.struct,
-            'start': '',
-            'goal': '',
-            'inc_nodes': self.inc_nodes,
-            'k': 0
-        }
+    @property
+    def drawer(self):
+        return VMRkDrawer(graph=self, inc_nodes=self.inc_nodes)
 
     @property
     def calculator(self):
-        return VMRkCalculator(**self.calc_request)
+        return VMRkCalculator(graph=self.struct, inc_nodes=self.inc_nodes)
 
     def __repr__(self):
         return f'VMRkGraph(type={self.type}, nodes={self.nodes}, inc_nodes={self.inc_nodes}, weighted={self.weighted})'
@@ -188,18 +185,14 @@ class MNRkGraph(BaseGraph):
         self.dec_nodes = config.get('options').get('dec_nodes')
         self.dec_nodes = list(map(str, self.dec_nodes))
 
-        self.calc_request = {
-            'graph': self.struct,
-            'start': '',
-            'goal': '',
-            'inc_nodes': self.inc_nodes,
-            'dec_nodes': self.dec_nodes,
-            'k': 0
-        }
+
+    @property
+    def drawer(self):
+        return MNRkDrawer(graph=self, inc_nodes=self.inc_nodes, dec_nodes=self.dec_nodes)
 
     @property
     def calculator(self):
-        return MNRkCalculator(**self.calc_request)
+        return MNRkCalculator(graph=self.struct, inc_nodes=self.inc_nodes, dec_nodes=self.dec_nodes)
 
     def __repr__(self):
         return f'MNRkGraph(type={self.type}, nodes={self.nodes}, inc_nodes={self.inc_nodes}, dec_nodes={self.dec_nodes}, weighted={self.weighted})'
@@ -209,16 +202,14 @@ class BaseTelNet(BaseGraph):
     def __init__(self, config):
         BaseGraph.__init__(self, config)
 
-        self.calc_request = {
-            'graph': self.struct,
-            'start': '',
-            'goal': '',
-            'mass': 0
-        }
+
+    @property
+    def drawer(self):
+        return BaseTelNetDrawer(graph=self)
 
     @property
     def calculator(self):
-        return BaseTelNetCalculator(**self.calc_request)
+        return BaseTelNetCalculator(graph=self.struct)
 
     @property
     def weights(self):
@@ -237,18 +228,14 @@ class VMRkTelNet(BaseTelNet, VMRkGraph):
         BaseTelNet.__init__(self, config)
         VMRkGraph.__init__(self, config)
 
-        self.calc_request = {
-            'graph': self.struct,
-            'start': '',
-            'goal': '',
-            'inc_nodes': self.inc_nodes,
-            'k': 0,
-            'mass': 0
-        }
+
+    @property
+    def drawer(self):
+        return VMRkTelNetDrawer(graph=self, inc_nodes=self.inc_nodes)
 
     @property
     def calculator(self):
-        return VMRkTelNetCalculator(**self.calc_request)
+        return VMRkTelNetCalculator(graph=self.struct, inc_nodes=self.inc_nodes)
 
     def __repr__(self):
         return f'VMRkTelNetGraph(type={self.type}, nodes={self.nodes}, inc_nodes={self.inc_nodes}, weighted={self.weighted})'
@@ -259,24 +246,14 @@ class MNRkTelNet(BaseTelNet, MNRkGraph):
         BaseTelNet.__init__(self, config)
         MNRkGraph.__init__(self, config)
 
-        self.calc_request = {
-            'graph': self.struct,
-            'start': '',
-            'goal': '',
-            'inc_nodes': self.inc_nodes,
-            'dec_nodes': self.dec_nodes,
-            'k': 0,
-            'mass': 0
-        }
+
+    @property
+    def drawer(self):
+        return MNRkTelNetDrawer(graph=self, inc_nodes=self.inc_nodes, dec_nodes=self.dec_nodes)
 
     @property
     def calculator(self):
-        return MNRkTelNetCalculator(**self.calc_request)
-
-    def calculate_total(self, **kwargs) -> TNMPathCollection:
-        self.calc_request.update(kwargs)
-        return self.calculator.calculate_total()
-
+        return MNRkTelNetCalculator(graph=self.struct, inc_nodes=self.inc_nodes, dec_nodes=self.dec_nodes)
 
     def __repr__(self):
         return f'MNRkTelNetGraph(type={self.type}, nodes={self.nodes}, inc_nodes={self.inc_nodes}, dec_nodes={self.dec_nodes}, weighted={self.weighted})'

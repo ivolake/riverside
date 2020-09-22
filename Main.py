@@ -25,6 +25,14 @@ def get_graph(config: dict) -> BaseGraph:
     else:
         raise Exception('В конфигурационном файле объявлен неверный тип графа.')
 
+def create_config():
+    # TODO:
+    #  Реализовать эту функцию
+    """
+    Функция, которая будет создавать конфигурационный файл по вводу пользователя
+    :return:
+    """
+    ...
 
 def get_config(path):
     with open(path, 'r', encoding='utf-8') as f:

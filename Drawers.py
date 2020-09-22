@@ -7,18 +7,17 @@ from numpy import random
 import os
 
 from DrawersSupport import PlaneGraphParams, TextBoxParams
-from Graphs import BaseGraph
+import Graphs
 from Paths import PathCollection, MPathCollection
 from config import OUTPUT_PATH
 from functions import generate_separate_graph_and_weights, generate_pos, generate_path_edges
 
 
-
 class BaseDrawer():
-    def __init__(self, graph: BaseGraph, inc_nodes: list = None, dec_nodes: list = None):
+    def __init__(self, graph: 'Graphs.BaseGraph', inc_nodes: list = None, dec_nodes: list = None):
         self.graph = graph
 
-        if inc_nodes is None:
+        if inc_nodes is not None:
             self.inc_nodes = inc_nodes
 
         if dec_nodes is not None:
@@ -206,9 +205,7 @@ class BaseDrawer():
 
 
 class VMRkDrawer(BaseDrawer):
-    def __init__(self, graph: BaseGraph, inc_nodes: list = None):
-        if inc_nodes is None:
-            inc_nodes = []
+    def __init__(self, graph: 'Graphs.BaseGraph', inc_nodes):
 
         BaseDrawer.__init__(self, graph, inc_nodes)
 
@@ -283,11 +280,7 @@ class VMRkDrawer(BaseDrawer):
 
 
 class MNRkDrawer(BaseDrawer):
-    def __init__(self, graph: BaseGraph, inc_nodes: list = None, dec_nodes: list = None):
-        if inc_nodes is None:
-            inc_nodes = []
-        if dec_nodes is None:
-            dec_nodes = []
+    def __init__(self, graph: 'Graphs.BaseGraph', inc_nodes: list, dec_nodes: list):
 
         BaseDrawer.__init__(self, graph, inc_nodes, dec_nodes)
 
