@@ -1,3 +1,4 @@
+import operator
 from typing import Tuple
 
 import matplotlib.pyplot as plt
@@ -63,7 +64,7 @@ class BaseDrawer():
     def figure_size(self) -> Tuple[int, int]:
         return (int(13 * self.nodes_count / 8), int(7 * self.nodes_count / 8))
 
-    def draw_graph(self, file_name: str = None, ipos: int = 0, show: bool = True):
+    def draw_graph(self, file_name: str = None, ipos: int = 1, show: bool = True):
         """
         Рисует граф без путей, сохраняя граф в директорию /output
         """
@@ -72,7 +73,10 @@ class BaseDrawer():
         # TODO:
         #  Переделать большую draw_graph в множество функций, чтобы исключить многократное повторение кода
 
-        (raw_graph, edges_labels) = generate_separate_graph_and_weights(self.graph.struct)  # превращаю взвешенный граф в
+        if self.graph.weighted:
+            (raw_graph, edges_labels) = generate_separate_graph_and_weights(self.graph.struct)  # превращаю взвешенный граф в
+        else:
+            (raw_graph, edges_labels) = self.graph.struct, []
         # читабельный для программы вид
 
         G = nx.DiGraph(raw_graph)  # создаю граф из образа digraph
@@ -82,8 +86,10 @@ class BaseDrawer():
 
         # в этом сегменте я задаю всем вершинам цвета,и некоторым в частности. Создаю списки с вершинами и их цветами
         G.add_nodes_from(G.nodes, color=self.standard_nodes_color)  # brcmyk - colors
-        G.add_nodes_from(self.inc_nodes, color=self.inc_nodes_color)
-        G.add_nodes_from(self.dec_nodes, color=self.dec_nodes_color)
+        if 'inc_nodes' in list(self.__dir__()) + list(self.__dict__):
+            G.add_nodes_from(self.inc_nodes, color=self.inc_nodes_color)
+        if 'dec_nodes' in list(self.__dir__()) + list(self.__dict__):
+            G.add_nodes_from(self.dec_nodes, color=self.dec_nodes_color)
         # G.add_node(path[0],color='green')                     # окрашиваю первую вершину пути в зеленый
         # G.add_node(path[len(path)-1],color='blue')            # окрашиваю последнюю вершину пути в синий
         node_color_attr = nx.get_node_attributes(G, 'color')
@@ -107,7 +113,7 @@ class BaseDrawer():
         elif ipos == 3:
             pos = nx.random_layout(G)
         else:
-            raise Exception(f'ipos parameter ({ipos}) is incorrect')
+            raise Exception(f'ipos parameter (ipos={ipos}) is incorrect')
 
         # рисование
         nx.draw(G, pos=pos,
@@ -128,7 +134,7 @@ class BaseDrawer():
             plt.show()
             plt.close()
 
-    def draw_graph_with_paths(self, paths: PathCollection, file_name: str = None, ipos: int = 0, show: bool = True):
+    def draw_graph_with_paths(self, paths: PathCollection, file_name: str = None, ipos: int = 1, show: bool = True):
         '''
             Рисует граф, сохраняя граф в директорию /output
             '''
@@ -209,14 +215,14 @@ class VMRkDrawer(BaseDrawer):
 
         BaseDrawer.__init__(self, graph, inc_nodes)
 
-    def draw_graph_with_paths(self, paths: MPathCollection, file_name: str = None, ipos: int = 0, show: bool = True):
+    def draw_graph_with_paths(self, paths: MPathCollection, file_name: str = None, ipos: int = 1, show: bool = True):
         G = nx.DiGraph(self.graph.struct)  # создаю граф из образа graph
         fig = plt.figure(figsize=self.figure_size,
                          dpi=self.dpi)  # для  сохранения картинки с помощью fig.savefig()
 
         text_box_params = TextBoxParams(paths=paths, graph_info={
             'graph_type': self.graph.type,
-            'k': self.graph.calc_request.get('k')
+            'k_min': paths.get_path_of_smallest_magnitude().i
         })
         ax = fig.add_subplot(111)  # добавляю текстовый бокс в окно
         ax.text(text_box_params.x, text_box_params.y, text_box_params.digraph_info, fontname=self.font_family,
@@ -284,7 +290,7 @@ class MNRkDrawer(BaseDrawer):
 
         BaseDrawer.__init__(self, graph, inc_nodes, dec_nodes)
 
-    def draw_graph_with_paths(self, paths: PathCollection, file_name: str = None, ipos: int = 0, show: bool = True):
+    def draw_graph_with_paths(self, paths: PathCollection, file_name: str = None, ipos: int = 1, show: bool = True):
         ...
 
 
@@ -292,7 +298,7 @@ class BaseTelNetDrawer(BaseDrawer):
     def __init__(self):
         ...
 
-    def draw_graph_with_paths(self, paths: PathCollection, file_name: str = None, ipos: int = 0, show: bool = True):
+    def draw_graph_with_paths(self, paths: PathCollection, file_name: str = None, ipos: int = 1, show: bool = True):
         ...
 
 
@@ -300,7 +306,7 @@ class VMRkTelNetDrawer(BaseTelNetDrawer, VMRkDrawer):
     def __init__(self):
         ...
 
-    def draw_graph_with_paths(self, paths: PathCollection, file_name: str = None, ipos: int = 0, show: bool = True):
+    def draw_graph_with_paths(self, paths: PathCollection, file_name: str = None, ipos: int = 1, show: bool = True):
         ...
 
 
@@ -308,5 +314,5 @@ class MNRkTelNetDrawer(BaseTelNetDrawer, MNRkDrawer):
     def __init__(self):
         ...
 
-    def draw_graph_with_paths(self, paths: PathCollection, file_name: str = None, ipos: int = 0, show: bool = True):
+    def draw_graph_with_paths(self, paths: PathCollection, file_name: str = None, ipos: int = 1, show: bool = True):
         ...

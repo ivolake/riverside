@@ -41,8 +41,8 @@ class TextBoxParams:
         if self._graph_type == 'standard':
             digraph_info = (f'Paths: {paths_string}\nReachability type: Standard')
         elif self._graph_type == 'vmrk':
-            k = self._graph_info.get('k')
-            digraph_info = (f'Paths: {paths_string}\nReachability type: VMR of k degree\nk = {k}')
+            k_min = self._graph_info.get('k_min')
+            digraph_info = (f'Paths: {paths_string}\nReachability type: VMR of k degree\nk_min = {k_min}')
         elif ...:
             ...
         elif ...:

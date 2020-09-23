@@ -17,19 +17,6 @@ class BaseGraph:
         self._nodes = None
         self._struct, self._weighted = self._extract_graph(self.config.get('path'), self.type)
 
-        self.calc_request = {
-            'graph': self.struct,
-            'start': '',
-            'goal': ''
-        }
-
-        self.draw_request = {
-            'graph': self.struct,
-            'paths': '',
-            'filename': '',
-            'ipos': '',
-            'show': ''
-        }
 
     def __repr__(self):
         return f'BaseGraph(type={self.type}, nodes={self.nodes}, weighted={self.weighted})'
@@ -149,10 +136,10 @@ class BaseGraph:
     def calculate_total(self, start, goal, mass) -> TNMPathCollection:
         return self.calculator.calculate_total(start, goal, mass)
 
-    def draw_graph(self, file_name: str = None, ipos: int = 0, show: bool = True):
+    def draw_graph(self, file_name: str = None, ipos: int = 1, show: bool = True):
         self.drawer.draw_graph(file_name, ipos, show)
 
-    def draw_graph_with_paths(self, paths: PathCollection, file_name: str = None, ipos: int = 0, show: bool = True):
+    def draw_graph_with_paths(self, paths: PathCollection, file_name: str = None, ipos: int = 1, show: bool = True):
         self.drawer.draw_graph_with_paths(paths, file_name, ipos, show)
 
 class VMRkGraph(BaseGraph):
@@ -217,10 +204,6 @@ class BaseTelNet(BaseGraph):
 
     def __repr__(self):
         return f'BaseTelNetGraph(type={self.type}, nodes={self.nodes}, weighted={self.weighted})'
-
-    def calculate(self, **kwargs) -> TNPathCollection:
-        self.calc_request.update(kwargs)
-        return self.calculator.calculate()
 
 class VMRkTelNet(BaseTelNet, VMRkGraph):
 
