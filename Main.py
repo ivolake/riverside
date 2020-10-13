@@ -3,6 +3,8 @@ import sys
 import ruamel.yaml
 from Graphs import BaseGraph, VMRkGraph, MNRkGraph, BaseTelNet, VMRkTelNet, MNRkTelNet
 
+# TODO: реализовать объект потока, расчет его времени;
+#  добавить в тип графа то, как он обрабатывает пакеты в потоке - одновременно или последовательно
 
 def get_graph(config: dict) -> BaseGraph:
     graph_type = config.get('type')
@@ -51,8 +53,10 @@ if __name__ == '__main__':
     args = parse_args(sys.argv[1:])
     config = get_config(args.config_path)
 
+    # TODO: 10.10.2020 - странные результаты, проверить
     graph = get_graph(config.get('graph'))
     pass
-    # graph.calculate_total(start='1', goal='14', mass=12)
+    paths = graph.calculate(start='1', goal='8', k=1)
+    graph.draw_graph_with_paths(paths=paths, n=2, permutate_paths=True)
 
     # drawer.run()

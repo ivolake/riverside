@@ -132,9 +132,9 @@ def get_edges(graph: dict, weighted: bool):
     """
     if not weighted:
         edges = []
-        for vi in list(graph.keys()):  # иду по вершинам графа. vi - текушая вершина
+        for vi in graph.keys():  # иду по вершинам графа. vi - текушая вершина
             neighbours = []
-            for vj in list(graph[vi].keys()):  # иду по соседям vi
+            for vj in graph[vi]:  # иду по соседям vi
                 neighbours.append(vj)
                 edges.append((vi, vj))
     else:

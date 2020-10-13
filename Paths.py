@@ -1,6 +1,7 @@
 from operator import attrgetter
 from typing import List, Iterator
 
+# TODO: реализовать наследование базового пути и коллекции от соответствующих абстрактных классов
 
 class Path(List):
     """
@@ -187,6 +188,24 @@ class PathCollection(List):
 
     def get_longest(self) -> Path:
         return max(self.paths, key=len)
+
+
+
+    def get_fastest(self) -> TNPath:
+        raise NotImplementedError
+
+    def get_slowest(self) -> TNPath:
+        raise NotImplementedError
+
+
+    def get_path_of_smallest_magnitude(self) -> TNMPath:
+        raise NotImplementedError
+
+    def get_path_of_biggest_magnitude(self) -> TNMPath:
+        raise NotImplementedError
+
+    def get_magnitudes_distribution(self):
+        raise NotImplementedError
 
 
 class TNPathCollection(PathCollection):

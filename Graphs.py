@@ -4,7 +4,7 @@ import functions as func
 from Calculators import BaseCalculator, VMRkCalculator, MNRkCalculator, BaseTelNetCalculator, VMRkTelNetCalculator, \
     MNRkTelNetCalculator
 from Drawers import BaseDrawer, MNRkDrawer, VMRkDrawer, VMRkTelNetDrawer, BaseTelNetDrawer, MNRkTelNetDrawer
-from Paths import PathCollection, TNPathCollection, TNMPathCollection
+from Paths import PathCollection, TNMPathCollection
 
 
 class BaseGraph:
@@ -26,8 +26,8 @@ class BaseGraph:
         return self._struct
     
     @struct.setter
-    def struct(self, struct):
-        self._struct = struct
+    def struct(self, value):
+        self._struct = value
 
     @property
     def edges(self):
@@ -59,9 +59,8 @@ class BaseGraph:
         return self._weighted
 
     @weighted.setter
-    def weighted(self, weighted):
-        self._weighted = weighted
-
+    def weighted(self, value):
+        self._weighted = value
 
     @property
     def drawer(self):
@@ -130,17 +129,33 @@ class BaseGraph:
 
         return g, weighted
 
-    def calculate(self,start: str, goal: str, **kwargs) -> PathCollection:
-        return self.calculator.calculate(start, goal, **kwargs)
+    def calculate(self,
+                  start: str,
+                  goal: str,
+                  **kwargs) -> PathCollection:
+        return self.calculator.calculate(start=start, goal=goal, **kwargs)
 
-    def calculate_total(self, start, goal, mass) -> TNMPathCollection:
-        return self.calculator.calculate_total(start, goal, mass)
+    def calculate_total(self,
+                        start: str,
+                        goal: str,
+                        mass: float) -> TNMPathCollection:
+        return self.calculator.calculate_total(start=start, goal=goal, mass=mass)
 
-    def draw_graph(self, file_name: str = None, ipos: int = 1, show: bool = True):
-        self.drawer.draw_graph(file_name, ipos, show)
+    def draw_graph(self,
+                   file_name: str = None,
+                   ipos: int = 1,
+                   show: bool = True) -> None:
+        self.drawer.draw_graph(file_name=file_name, ipos=ipos, show=show)
 
-    def draw_graph_with_paths(self, paths: PathCollection, file_name: str = None, ipos: int = 1, show: bool = True):
-        self.drawer.draw_graph_with_paths(paths, file_name, ipos, show)
+    def draw_graph_with_paths(self,
+                              paths: PathCollection,
+                              n: int = 0,
+                              permutate_paths: bool = False,
+                              file_name: str = None,
+                              ipos: int = 1,
+                              show: bool = True) -> None:
+        self.drawer.draw_graph_with_paths(paths=paths, n=n, permutate_paths=permutate_paths,
+                                          file_name=file_name, ipos=ipos, show=show)
 
 class VMRkGraph(BaseGraph):
 
@@ -152,7 +167,7 @@ class VMRkGraph(BaseGraph):
 
     @property
     def drawer(self):
-        return VMRkDrawer(graph=self, inc_nodes=self.inc_nodes)
+        return VMRkDrawer(graph=self)
 
     @property
     def calculator(self):
@@ -175,7 +190,7 @@ class MNRkGraph(BaseGraph):
 
     @property
     def drawer(self):
-        return MNRkDrawer(graph=self, inc_nodes=self.inc_nodes, dec_nodes=self.dec_nodes)
+        return MNRkDrawer(graph=self)
 
     @property
     def calculator(self):
@@ -214,7 +229,7 @@ class VMRkTelNet(BaseTelNet, VMRkGraph):
 
     @property
     def drawer(self):
-        return VMRkTelNetDrawer(graph=self, inc_nodes=self.inc_nodes)
+        return VMRkTelNetDrawer(graph=self)
 
     @property
     def calculator(self):
@@ -232,7 +247,7 @@ class MNRkTelNet(BaseTelNet, MNRkGraph):
 
     @property
     def drawer(self):
-        return MNRkTelNetDrawer(graph=self, inc_nodes=self.inc_nodes, dec_nodes=self.dec_nodes)
+        return MNRkTelNetDrawer(graph=self)
 
     @property
     def calculator(self):
