@@ -58,7 +58,7 @@ class VMRkCalculator(BaseCalculator):
             raise ValueError('Argument "k" is not passed.')
 
         paths = MPathCollection([])
-        i = 0  # счетчик запрщенных вершин
+        i = 0  # счетчик запрещенных вершин
         stack = [(start, MPath([start], i))]
         while stack:
             (vertex, path) = stack.pop()
@@ -73,13 +73,9 @@ class VMRkCalculator(BaseCalculator):
                 if (nextv not in self.inc_nodes) or (i < k):  # допустимость по условию VMRk
                     # ---------------- ORIGINAL ----------------
                     if nextv == goal:
-                        path.path += [nextv]
-                        path.i = i
-                        paths.append(path)
+                        paths.append(MPath(path.path + [nextv], i))
                     else:
-                        path.path += [nextv]
-                        path.i = i
-                        stack.append((nextv, path))
+                        stack.append((nextv, MPath(path.path + [nextv], i)))
         return paths
 
 class MNRkCalculator(BaseCalculator):

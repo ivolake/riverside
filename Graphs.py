@@ -12,10 +12,11 @@ class BaseGraph:
     def __init__(self, config):
         self.config = config
         self.type = config.get('type')
+        self._graph_path = self.config.get('path')
 
         self._edges = None
         self._nodes = None
-        self._struct, self._weighted = self._extract_graph(self.config.get('path'), self.type)
+        self._struct, self._weighted = self._extract_graph(self._graph_path, self.type)
 
 
     def __repr__(self):
@@ -149,13 +150,10 @@ class BaseGraph:
 
     def draw_graph_with_paths(self,
                               paths: PathCollection,
-                              n: int = 0,
-                              permutate_paths: bool = False,
                               file_name: str = None,
                               ipos: int = 1,
                               show: bool = True) -> None:
-        self.drawer.draw_graph_with_paths(paths=paths, n=n, permutate_paths=permutate_paths,
-                                          file_name=file_name, ipos=ipos, show=show)
+        self.drawer.draw_graph_with_paths(paths=paths, file_name=file_name, ipos=ipos, show=show)
 
 class VMRkGraph(BaseGraph):
 

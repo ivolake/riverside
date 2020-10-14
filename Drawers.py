@@ -15,7 +15,7 @@ from Paths import PathCollection, MPathCollection
 from config import OUTPUT_PATH
 from functions import generate_separate_graph_and_weights, generate_pos, generate_path_edges
 
-
+# TODO: Исправить ошибку в add_text_box; исправить ошибку с неправилным рассчетом путей (см. ноутбук);
 
 
 class BaseDrawer():
@@ -54,7 +54,7 @@ class BaseDrawer():
 
 
 
-    def initial_configuring(self, paths: PathCollection = None, n: int = 0, permutate_paths: bool = False):
+    def initial_configuring(self, paths: PathCollection = None):
         """
 
         Parameters
@@ -70,34 +70,17 @@ class BaseDrawer():
 
         self._paths = paths
 
-        print(f'self._paths = {self._paths}')
-        self._n = n
-
         if self.graph.weighted:
             (self.raw_graph, self.edges_labels) = generate_separate_graph_and_weights(self.graph.struct)  # превращаю взвешенный граф в
         else:
             (self.raw_graph, self.edges_labels) = self.graph.struct, None
         # читабельный для программы вид
 
-        self.G = nx.DiGraph(self.raw_graph)  # создаю граф из образа digraph
-        self.fig = plt.figure(figsize=self.figure_size, # здесь деление на 11, а не на 8, как в осталных
-                         dpi=self.drawer_config.dpi)  # для  сохранения картинки с помощью fig.savefig()
+        self.G = nx.DiGraph(self.raw_graph)
+        self.fig = plt.figure(figsize=self.figure_size,
+                         dpi=self.drawer_config.dpi)
         self.ax = self.fig.add_subplot(111)
         # Size in pixels = figsize * dpi
-
-        # при пермутации теряется тип
-        if self._paths is not None and permutate_paths:
-            _path_type = type(self._paths[0])
-            _path_c_type = type(self._paths)
-
-            paths_perms = list(permutations(self._paths))
-            self._paths = paths_perms[randint(1, len(paths_perms))-1]
-
-            print(f'paths_perms = {paths_perms}')
-            print(f'permutated self._paths = {self._paths}')
-
-        if self._paths is not None:
-            self._paths = self._paths[0:self._n]
 
     def set_colors_to_nodes(self):
         self.G.add_nodes_from(self.G.nodes, color=self.drawer_config.standard_nodes_color)  # brcmyk - colors
@@ -153,7 +136,6 @@ class BaseDrawer():
 
     def add_text_box(self):
         text_box_params = TextBoxParams(paths=self._paths,
-                                        n=self._n,
                                         graph_info={
             'graph_type': self.graph.type,
             'k_min': self._paths.get_path_of_smallest_magnitude().i
@@ -254,10 +236,6 @@ class BaseDrawer():
         """
         # ---------------------DRAWING---------------------
 
-        # TODO:
-        #  Переделать все рисовальные функции в множество функций, чтобы исключить многократное повторение кода
-        #  На 25.09.2020 завершены функции внутри BaseDrawer
-
         # Определение переменной графа в терминах networkx и прочее
         self.initial_configuring()
 
@@ -277,8 +255,6 @@ class BaseDrawer():
 
     def draw_graph_with_paths(self,
                               paths: PathCollection,
-                              n: int = 0,
-                              permutate_paths: bool = False,
                               file_name: str = None,
                               ipos: int = 1,
                               show: bool = True):
@@ -286,7 +262,7 @@ class BaseDrawer():
             Рисует граф, сохраняя граф в директорию /output
         """
         # ---------------------DRAWING---------------------
-        self.initial_configuring(paths=paths, n=n, permutate_paths=permutate_paths)
+        self.initial_configuring(paths=paths)
 
         self.add_text_box()
 

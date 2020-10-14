@@ -112,7 +112,7 @@ class TNMPath(MPath, TNPath):
         return f'{self.path},\n   i: {self.i},\n   time: {self.time:.3f}'
 
 
-class PathCollection(List):
+class PathCollection():
     def __init__(self, paths: List) -> None:
         self.paths = paths
 
@@ -170,6 +170,10 @@ class PathCollection(List):
     def __iter__(self) -> Iterator:
         return iter(self.paths)
 
+    def slice(self, start: int, stop: int, step: int = None):
+        raw_paths = self.paths[start:stop:step] if step is not None else self.paths[start:stop]
+        return PathCollection(raw_paths)
+
     def append(self, value: Path) -> None:
         self.paths.append(value)
 
@@ -222,6 +226,10 @@ class MPathCollection(PathCollection):
     def __init__(self, paths: List):
         PathCollection.__init__(self, paths)
 
+    def slice(self, start: int, stop: int, step: int = None):
+        raw_paths = self.paths[start:stop:step] if step is not None else self.paths[start:stop]
+        return MPathCollection([MPath(p.path, p.i) for p in raw_paths])
+
     def get_path_of_smallest_magnitude(self) -> TNMPath:
         return min(self.paths, key=attrgetter('i'))
 
@@ -242,7 +250,7 @@ class MPathCollection(PathCollection):
 
         return magnitudes_distribution
 
-class TNMPathCollection(MPathCollection, TNPathCollection):
+class TNMPathCollection(TNPathCollection, MPathCollection):
     def __init__(self, paths: List):
-        MPathCollection.__init__(self, paths)
         TNPathCollection.__init__(self, paths)
+        MPathCollection.__init__(self, paths)

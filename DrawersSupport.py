@@ -54,13 +54,12 @@ class BaseDrawerConfig():
 class TextBoxParams:
     def __init__(self,
                  graph_info: dict,
-                 paths: list,
-                 n: int):
+                 paths: list
+                 ):
 
         self._graph_info = graph_info
         self._graph_type = self._graph_info.get('graph_type')
         self._paths = paths
-        self._n = n
 
         self.x = -0.14
         self.y = 0.03 + 0.012 * len(self._paths)
@@ -81,19 +80,11 @@ class TextBoxParams:
         paths_string = '{'
         L = len(self._paths) if len(self._paths) <= 10 else 10
 
-        if self._n == 0:
-            for i in range(0, L):
-                if i != L - 1:
-                    paths_string += str(self._paths[i]) + ', ' + '\n' * (i % 2)
-                else:
-                    paths_string += str(self._paths[i]) + '\n}'
-
         for i in range(0, L):
-            if i < self._n:
-                if i != L - 1:
-                    paths_string += str(self._paths[i]) + ', ' + '\n' * (i % 2)
-                else:
-                    paths_string += str(self._paths[i]) + '\n}'
+            if i != L - 1:
+                paths_string += str(self._paths[i]) + ', ' + '\n' * (i % 2)
+            else:
+                paths_string += str(self._paths[i]) + '}'
 
         if self._graph_type == 'standard':
             digraph_info = f'Paths: {paths_string}\nReachability type: Standard'
@@ -101,13 +92,13 @@ class TextBoxParams:
             k_min = self._graph_info.get('k_min')
             digraph_info = f'Paths: {paths_string}\nReachability type: VMR of k degree\nk_min = {k_min}'
         elif self._graph_type == 'mnrk':
-            ...
+            digraph_info = ...
         elif self._graph_type == 'telnet':
-            ...
+            digraph_info = ...
         elif self._graph_type == 'vmrk_telnet':
-            ...
+            digraph_info = ...
         elif self._graph_type == 'mnrk_telnet':
-            ...
+            digraph_info = ...
         else:
             raise ValueError(f'Graph type "{self._graph_type}" not recognized')
 
