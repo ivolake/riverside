@@ -1,6 +1,13 @@
+import json
 from collections import Iterable
 from typing import Tuple
 
+class FineDict(dict):
+    def __init__(self):
+        super().__init__()
+
+    def __repr__(self):
+        return json.dumps(self, indent=4)
 
 def generate_pos(g: dict) -> dict:
     '''

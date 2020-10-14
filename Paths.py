@@ -2,6 +2,8 @@ from operator import attrgetter
 from typing import List, Iterator
 
 # TODO: реализовать наследование базового пути и коллекции от соответствующих абстрактных классов
+from additions import FineDict
+
 
 class Path(List):
     """
@@ -112,7 +114,7 @@ class TNMPath(MPath, TNPath):
         return f'{self.path},\n   i: {self.i},\n   time: {self.time:.3f}'
 
 
-class PathCollection():
+class PathCollection(List):
     def __init__(self, paths: List) -> None:
         self.paths = paths
 
@@ -208,6 +210,9 @@ class PathCollection():
     def get_path_of_biggest_magnitude(self) -> TNMPath:
         raise NotImplementedError
 
+    def get_magnitudes_counts(self):
+        raise NotImplementedError
+
     def get_magnitudes_distribution(self):
         raise NotImplementedError
 
@@ -215,6 +220,10 @@ class PathCollection():
 class TNPathCollection(PathCollection):
     def __init__(self, paths: List):
         PathCollection.__init__(self, paths)
+
+    def slice(self, start: int, stop: int, step: int = None):
+        raw_paths = self.paths[start:stop:step] if step is not None else self.paths[start:stop]
+        return TNPathCollection(raw_paths)
 
     def get_fastest(self) -> TNPath:
         return min(self.paths, key=attrgetter('time'))
@@ -236,17 +245,22 @@ class MPathCollection(PathCollection):
     def get_path_of_biggest_magnitude(self) -> TNMPath:
         return max(self.paths, key=attrgetter('i'))
 
+    def get_magnitudes_counts(self):
+        magnitudes_counts = FineDict()
+        for path in self.paths:
+            if path.i not in magnitudes_counts.keys():
+                magnitudes_counts.update({path.i: 1})
+            else:
+                magnitudes_counts[path.i] += 1
+        return magnitudes_counts
+
     def get_magnitudes_distribution(self):
         N = len(self.paths)
-        magnitudes_distribution = dict()
-        for path in self.paths:
-            if path.i not in magnitudes_distribution.keys():
-                magnitudes_distribution.update({path.i: 1})
-            else:
-                magnitudes_distribution[path.i] += 1
+        magnitudes_distribution = FineDict()
+        magnitudes_counts = self.get_magnitudes_counts()
 
-        for k in magnitudes_distribution:
-            magnitudes_distribution[k] /= N
+        for k in magnitudes_counts.keys():
+            magnitudes_distribution.update({k:magnitudes_counts[k] / N})
 
         return magnitudes_distribution
 
@@ -254,3 +268,7 @@ class TNMPathCollection(TNPathCollection, MPathCollection):
     def __init__(self, paths: List):
         TNPathCollection.__init__(self, paths)
         MPathCollection.__init__(self, paths)
+
+    def slice(self, start: int, stop: int, step: int = None):
+        raw_paths = self.paths[start:stop:step] if step is not None else self.paths[start:stop]
+        return TNMPathCollection([MPath(p.path, p.i) for p in raw_paths])

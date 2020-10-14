@@ -289,6 +289,7 @@ class MNRkTelNetCalculator(BaseTelNetCalculator, MNRkCalculator):
 
         return paths
 
+    # TODO: адаптировать calculate_total к MNRk простому и к обоим VMRk
     def calculate_total(self, start: str, goal: str, mass: float):
         """
         DMPTN - Поиск вглубину всех путей во взвешенном графе с магнитной достижимостью, функция выводит быстрейший путь из start в goal

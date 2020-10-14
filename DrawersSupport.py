@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from types import MappingProxyType
 
+from Paths import PathCollection
+
 
 @dataclass
 class BaseDrawerConfig():
@@ -54,7 +56,7 @@ class BaseDrawerConfig():
 class TextBoxParams:
     def __init__(self,
                  graph_info: dict,
-                 paths: list
+                 paths: PathCollection
                  ):
 
         self._graph_info = graph_info

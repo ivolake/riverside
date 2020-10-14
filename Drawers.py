@@ -13,7 +13,7 @@ from DrawersSupport import TextBoxParams, BaseDrawerConfig
 import Graphs
 from Paths import PathCollection, MPathCollection
 from config import OUTPUT_PATH
-from functions import generate_separate_graph_and_weights, generate_pos, generate_path_edges
+from additions import generate_separate_graph_and_weights, generate_pos, generate_path_edges
 
 # TODO: Исправить ошибку в add_text_box; исправить ошибку с неправилным рассчетом путей (см. ноутбук);
 
