@@ -152,8 +152,9 @@ class BaseGraph:
                               paths: PathCollection,
                               file_name: str = None,
                               ipos: int = 1,
-                              show: bool = True) -> None:
-        self.drawer.draw_graph_with_paths(paths=paths, file_name=file_name, ipos=ipos, show=show)
+                              show: bool = True,
+                              **kwargs) -> None:
+        self.drawer.draw_graph_with_paths(paths=paths, file_name=file_name, ipos=ipos, show=show, **kwargs)
 
 class VMRkGraph(BaseGraph):
 

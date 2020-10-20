@@ -94,13 +94,16 @@ class TextBoxParams:
             k_min = self._graph_info.get('k_min')
             digraph_info = f'Paths: {paths_string}\nReachability type: VMR of k degree\nk_min = {k_min}'
         elif self._graph_type == 'mnrk':
-            digraph_info = ...
+            k = self._graph_info.get('k')
+            digraph_info = f'Paths: {paths_string}\nReachability type: MNR of k degree\nk = {k}'
         elif self._graph_type == 'telnet':
-            digraph_info = ...
+            digraph_info = f'Paths: {paths_string}\nReachability type: Standard'
         elif self._graph_type == 'vmrk_telnet':
-            digraph_info = ...
+            k_min = self._graph_info.get('k_min')
+            digraph_info = f'Paths: {paths_string}\nReachability type: VMR  of k degree\nk_min = {k_min}'
         elif self._graph_type == 'mnrk_telnet':
-            digraph_info = ...
+            k = self._graph_info.get('k')
+            digraph_info = f'Paths: {paths_string}\nReachability type: MNR of k degree\nk = {k}'
         else:
             raise ValueError(f'Graph type "{self._graph_type}" not recognized')
 

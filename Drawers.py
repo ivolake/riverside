@@ -11,7 +11,7 @@ import os
 
 from DrawersSupport import TextBoxParams, BaseDrawerConfig
 import Graphs
-from Paths import PathCollection, MPathCollection
+from Paths import PathCollection, MPathCollection, TNMPathCollection, TNPathCollection
 from config import OUTPUT_PATH
 from additions import generate_separate_graph_and_weights, generate_pos, generate_path_edges
 
@@ -54,7 +54,7 @@ class BaseDrawer():
 
 
 
-    def initial_configuring(self, paths: PathCollection = None):
+    def initial_configuring(self, paths: PathCollection = None, **kwargs):
         """
 
         Parameters
@@ -69,6 +69,9 @@ class BaseDrawer():
         """
 
         self._paths = paths
+
+        if 'k' in kwargs.keys():
+            self._k = kwargs['k']
 
         if self.graph.weighted:
             (self.raw_graph, self.edges_labels) = generate_separate_graph_and_weights(self.graph.struct)  # превращаю взвешенный граф в
@@ -135,11 +138,19 @@ class BaseDrawer():
             raise Exception(f'ipos parameter (ipos={ipos}) is incorrect')
 
     def add_text_box(self):
+        graph_info = {
+            'graph_type': self.graph.type
+        }
+
+        if self.graph.type in ['vmrk', 'vmrk_telnet']:
+            graph_info.update({'k_min': self._paths.get_path_of_smallest_magnitude().i})
+        elif self.graph.type in ['mnrk', 'mnrk_telnet']:
+            graph_info.update({'k': self._k})
+        else:
+            pass
+
         text_box_params = TextBoxParams(paths=self._paths,
-                                        graph_info={
-            'graph_type': self.graph.type,
-            'k_min': self._paths.get_path_of_smallest_magnitude().i
-        })
+                                        graph_info=graph_info)
 
         self.ax.text(text_box_params.x, text_box_params.y, text_box_params.digraph_info,
                 fontname=self.drawer_config.font_family,
@@ -257,12 +268,13 @@ class BaseDrawer():
                               paths: PathCollection,
                               file_name: str = None,
                               ipos: int = 1,
-                              show: bool = True):
+                              show: bool = True,
+                              **kwargs):
         """
             Рисует граф, сохраняя граф в директорию /output
         """
         # ---------------------DRAWING---------------------
-        self.initial_configuring(paths=paths)
+        self.initial_configuring(paths=paths, **kwargs)
 
         self.add_text_box()
 
