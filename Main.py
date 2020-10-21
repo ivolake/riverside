@@ -5,6 +5,9 @@ from Graphs import BaseGraph, VMRkGraph, MNRkGraph, BaseTelNet, VMRkTelNet, MNRk
 
 # TODO: реализовать объект потока, расчет его времени;
 #  добавить в тип графа то, как он обрабатывает пакеты в потоке - одновременно или последовательно
+
+# TODO: реализовать объект оператора, которому передается граф, и который имеет метод "послать поток по графу"
+
 # TODO: реализовать оптимизацию графа по инк-нодам и дек-нодам для поиска конфигурации с наибольшим количеством
 #  путей с конкретной достижимостью
 
@@ -57,7 +60,6 @@ if __name__ == '__main__':
     args = parse_args(sys.argv[1:])
     config = get_config(args.config_path)
 
-    # TODO: 10.10.2020 - странные результаты, проверить
     graph = get_graph(config.get('graph'))
     pass
     paths = graph.calculate(start='1', goal='14', k=1,  mass=190)
