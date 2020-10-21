@@ -37,7 +37,7 @@ class BaseCalculator():
                     stack.append((nextv, path + [nextv]))
         return paths
 
-    def calculate_total(self, start: str, goal: str, mass: float):
+    def calculate_total(self, start: str, goal: str, **kwargs):
         raise NotImplementedError
 
 class VMRkCalculator(BaseCalculator):
@@ -76,6 +76,37 @@ class VMRkCalculator(BaseCalculator):
                         paths.append(MPath(path.path + [nextv], i))
                     else:
                         stack.append((nextv, MPath(path.path + [nextv], i)))
+        return paths
+
+    def calculate_total(self, start: str, goal: str, **kwargs):
+        """
+        DMPTN - Поиск вглубину всех путей во взвешенном графе с магнитной достижимостью, функция выводит быстрейший путь из start в goal
+        Функция ищет пути от вершины start до goal, удовлетворяющие магнтиности порядка k.
+        Параметр inc_nodes принимает множество увеличивающих магнтиность вершин.
+        Функция вернет все возможные пути из start в goal с их порядками магнитности
+
+        """
+        paths = MPathCollection([])
+        i = 0  # счетчик запрещенных вершин
+
+        stack = [(start, MPath([start], i))]
+        while stack:
+            spop = stack.pop()  # spop = (vertex, {path : t}, i)
+            vertex = spop[0]
+            path = spop[1].path
+            i = spop[1].i
+            # --------------- CONDITIONS ---------------
+            if vertex in self.inc_nodes:
+                i += 1
+            # --------------- CONDITIONS ---------------
+            for nextv in set(self.graph[vertex]) - set(path):  # set({a : b, c : d}) == {a,c}
+                if nextv == goal:
+                    if nextv in self.inc_nodes:
+                        i += 1
+                    paths.append(MPath(path + [nextv], i))
+                else:
+                    stack.append((nextv, MPath(path + [nextv], i)))
+
         return paths
 
 class MNRkCalculator(BaseCalculator):
@@ -128,6 +159,46 @@ class MNRkCalculator(BaseCalculator):
                 else:
                     stack.append((nextv, path + [nextv], i))
                 # ---------------- ORIGINAL ----------------
+        return paths
+
+    def calculate_total(self, start: str, goal: str, **kwargs):
+        """
+        DMPTN - Поиск вглубину всех путей во взвешенном графе с магнитной достижимостью, функция выводит быстрейший путь из start в goal
+        Функция ищет пути от вершины start до goal, удовлетворяющие магнтиности порядка k.
+        Параметр inc_nodes принимает множество увеличивающих магнтиность вершин.
+        Параметр dec_nodes принимает множество уменьшающих магнтиность вершин.
+        Функция вернет все возможные пути из start в goal с их порядками магнитности
+
+        """
+        if not self.dec_nodes:
+            self.dec_nodes = list(set(self.graph) - set(self.inc_nodes))
+
+        paths = MPathCollection([])
+        i = 0  # счетчик запрещенных вершин
+
+        stack = [(start, MPath([start], i))]
+        while stack:
+            spop = stack.pop()  # spop = (vertex, {path : t}, i)
+            vertex = spop[0]
+            path = spop[1].path
+            i = spop[1].i
+            # --------------- CONDITIONS ---------------
+            if vertex in self.inc_nodes:
+                i += 1
+            elif vertex in self.dec_nodes:
+                i -= 1
+            # --------------- CONDITIONS ---------------
+            for nextv in set(self.graph[vertex]) - set(path):  # set({a : b, c : d}) == {a,c}
+                if nextv == goal:
+                    if nextv in self.inc_nodes:
+                        i += 1
+                    elif nextv in self.dec_nodes:
+                        i -= 1
+
+                    paths.append(MPath(path + [nextv], i))
+                else:
+                    stack.append((nextv, MPath(path + [nextv], i)))
+
         return paths
 
 class BaseTelNetCalculator(BaseCalculator):
@@ -227,6 +298,51 @@ class VMRkTelNetCalculator(BaseTelNetCalculator, VMRkCalculator):
                 # ---------------- ORIGINAL END ------------
         return paths
 
+    def calculate_total(self, start: str, goal: str, **kwargs):
+        """
+        DMPTN - Поиск вглубину всех путей во взвешенном графе с магнитной достижимостью, функция выводит быстрейший путь из start в goal
+        Функция ищет пути от вершины start до goal, удовлетворяющие магнтиности порядка k.
+        Параметр inc_nodes принимает множество увеличивающих магнтиность вершин.
+        Функция вернет все возможные пути из start в goal с их порядками магнитности
+
+        """
+        mass = kwargs.get('mass', None)
+        if mass is None:
+            # raise ValueError('Argument "mass" is not passed.')
+            return VMRkCalculator.calculate_total(self, start=start, goal=goal)
+        else:
+            paths = TNMPathCollection([])
+            i = 0  # счетчик запрещенных вершин
+
+            t = 0  # время прохождения по пути, t = m / v
+            stack = [(start, TNMPath([start], i, t))]
+            while stack:
+                spop = stack.pop()  # spop = (vertex, {path : t}, i)
+                vertex = spop[0]
+                path = spop[1].path
+                t = spop[1].time
+                i = spop[1].i
+                # --------------- CONDITIONS ---------------
+                if vertex in self.inc_nodes:
+                    i += 1
+                # --------------- CONDITIONS ---------------
+                for nextv in set(self.graph[vertex]) - set(path):  # set({a : b, c : d}) == {a,c}
+                    if nextv == goal:
+                        if nextv in self.inc_nodes:
+                            i += 1
+
+                        v = self.graph[vertex][nextv]
+                        t += mass / v
+                        paths.append(TNMPath(path + [nextv], i, t))  # вместо yield
+                        t -= mass / v
+                    else:
+                        v = self.graph[vertex][nextv]
+                        t += mass / v
+                        stack.append((nextv, TNMPath(path + [nextv], i, t)))
+                        t -= mass / v
+
+            return paths
+
 class MNRkTelNetCalculator(BaseTelNetCalculator, MNRkCalculator):
     def __init__(self, graph: dict, inc_nodes: list, dec_nodes: list):
         BaseTelNetCalculator.__init__(self, graph)
@@ -289,8 +405,7 @@ class MNRkTelNetCalculator(BaseTelNetCalculator, MNRkCalculator):
 
         return paths
 
-    # TODO: адаптировать calculate_total к MNRk простому и к обоим VMRk
-    def calculate_total(self, start: str, goal: str, mass: float):
+    def calculate_total(self, start: str, goal: str, **kwargs):
         """
         DMPTN - Поиск вглубину всех путей во взвешенном графе с магнитной достижимостью, функция выводит быстрейший путь из start в goal
         Функция ищет пути от вершины start до goal, удовлетворяющие магнтиности порядка k.
@@ -299,41 +414,46 @@ class MNRkTelNetCalculator(BaseTelNetCalculator, MNRkCalculator):
         Функция вернет все возможные пути из start в goal с их порядками магнитности
 
         """
-        if not self.dec_nodes:
-            self.dec_nodes = list(set(self.graph) - set(self.inc_nodes))
+        mass = kwargs.get('mass', None)
+        if mass is None:
+            # raise ValueError('Argument "mass" is not passed.')
+            return MNRkCalculator.calculate_total(self, start=start, goal=goal)
+        else:
+            if not self.dec_nodes:
+                self.dec_nodes = list(set(self.graph) - set(self.inc_nodes))
 
-        paths = TNMPathCollection([])
-        i = 0  # счетчик запрещенных вершин
+            paths = TNMPathCollection([])
+            i = 0  # счетчик запрещенных вершин
 
-        t = 0  # время прохождения по пути, t = m / v
-        stack = [(start, TNMPath([start], i, t))]
-        while stack:
-            spop = stack.pop()  # spop = (vertex, {path : t}, i)
-            vertex = spop[0]
-            path = spop[1].path
-            t = spop[1].time
-            i = spop[1].i
-            # --------------- CONDITIONS ---------------
-            if vertex in self.inc_nodes:
-                i += 1
-            elif vertex in self.dec_nodes:
-                i -= 1
-            # --------------- CONDITIONS ---------------
-            for nextv in set(self.graph[vertex]) - set(path):  # set({a : b, c : d}) == {a,c}
-                if nextv == goal:
-                    if nextv in self.inc_nodes:
-                        i += 1
-                    elif nextv in self.dec_nodes:
-                        i -= 1
+            t = 0  # время прохождения по пути, t = m / v
+            stack = [(start, TNMPath([start], i, t))]
+            while stack:
+                spop = stack.pop()  # spop = (vertex, {path : t}, i)
+                vertex = spop[0]
+                path = spop[1].path
+                t = spop[1].time
+                i = spop[1].i
+                # --------------- CONDITIONS ---------------
+                if vertex in self.inc_nodes:
+                    i += 1
+                elif vertex in self.dec_nodes:
+                    i -= 1
+                # --------------- CONDITIONS ---------------
+                for nextv in set(self.graph[vertex]) - set(path):  # set({a : b, c : d}) == {a,c}
+                    if nextv == goal:
+                        if nextv in self.inc_nodes:
+                            i += 1
+                        elif nextv in self.dec_nodes:
+                            i -= 1
 
-                    v = self.graph[vertex][nextv]
-                    t += mass / v
-                    paths.append(TNMPath(path + [nextv], i, t))  # вместо yield
-                    t -= mass / v
-                else:
-                    v = self.graph[vertex][nextv]
-                    t += mass / v
-                    stack.append((nextv, TNMPath(path + [nextv], i, t)))
-                    t -= mass / v
+                        v = self.graph[vertex][nextv]
+                        t += mass / v
+                        paths.append(TNMPath(path + [nextv], i, t))  # вместо yield
+                        t -= mass / v
+                    else:
+                        v = self.graph[vertex][nextv]
+                        t += mass / v
+                        stack.append((nextv, TNMPath(path + [nextv], i, t)))
+                        t -= mass / v
 
-        return paths
+            return paths

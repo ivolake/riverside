@@ -8,6 +8,8 @@ from Graphs import BaseGraph, VMRkGraph, MNRkGraph, BaseTelNet, VMRkTelNet, MNRk
 # TODO: реализовать оптимизацию графа по инк-нодам и дек-нодам для поиска конфигурации с наибольшим количеством
 #  путей с конкретной достижимостью
 
+# TODO: Переделать всю документацию!
+
 def get_graph(config: dict) -> BaseGraph:
     graph_type = config.get('type')
     if graph_type == 'standard':

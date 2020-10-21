@@ -4,7 +4,7 @@ import additions as adds
 from Calculators import BaseCalculator, VMRkCalculator, MNRkCalculator, BaseTelNetCalculator, VMRkTelNetCalculator, \
     MNRkTelNetCalculator
 from Drawers import BaseDrawer, MNRkDrawer, VMRkDrawer, VMRkTelNetDrawer, BaseTelNetDrawer, MNRkTelNetDrawer
-from Paths import PathCollection, TNMPathCollection
+from Paths import PathCollection, TNMPathCollection, MPathCollection
 
 
 class BaseGraph:
@@ -139,8 +139,8 @@ class BaseGraph:
     def calculate_total(self,
                         start: str,
                         goal: str,
-                        mass: float) -> TNMPathCollection:
-        return self.calculator.calculate_total(start=start, goal=goal, mass=mass)
+                        **kwargs) -> MPathCollection:
+        return self.calculator.calculate_total(start=start, goal=goal, **kwargs)
 
     def draw_graph(self,
                    file_name: str = None,
@@ -172,6 +172,20 @@ class VMRkGraph(BaseGraph):
         return f'VMRkGraph(type={self.type}, nodes={self.nodes}, inc_nodes={self.inc_nodes}, weighted={self.weighted})'
 
 
+    def get_total_magnitudes_distribution(self):
+        total_mc = adds.FineDict()
+        for s in self.nodes:
+            for g in self.nodes:
+                paths = self.calculate_total(start=s, goal=g)
+                p_mc = paths.get_magnitudes_counts()
+                for k in p_mc:
+                    if k not in total_mc.keys():
+                        total_mc.update({k: 0})
+                    else:
+                        total_mc[k] += 1
+        return total_mc
+
+
 class MNRkGraph(BaseGraph):
 
     def __init__(self, config):
@@ -188,6 +202,20 @@ class MNRkGraph(BaseGraph):
 
     def __repr__(self):
         return f'MNRkGraph(type={self.type}, nodes={self.nodes}, inc_nodes={self.inc_nodes}, dec_nodes={self.dec_nodes}, weighted={self.weighted})'
+
+
+    def get_total_magnitudes_distribution(self):
+        total_mc = adds.FineDict()
+        for s in self.nodes:
+            for g in self.nodes:
+                paths = self.calculate_total(start=s, goal=g)
+                p_mc = paths.get_magnitudes_counts()
+                for k in p_mc:
+                    if k not in total_mc.keys():
+                        total_mc.update({k: 0})
+                    else:
+                        total_mc[k] += 1
+        return total_mc
 
 class BaseTelNet(BaseGraph):
 
@@ -230,16 +258,3 @@ class MNRkTelNet(BaseTelNet, MNRkGraph):
 
     def __repr__(self):
         return f'MNRkTelNetGraph(type={self.type}, nodes={self.nodes}, inc_nodes={self.inc_nodes}, dec_nodes={self.dec_nodes}, weighted={self.weighted})'
-
-    def get_total_magnitudes_distribution(self):
-        total_mc = adds.FineDict()
-        for s in self.nodes:
-            for g in self.nodes:
-                paths = self.calculate_total(start=s, goal=g, mass=1)
-                p_mc = paths.get_magnitudes_counts()
-                for k in p_mc:
-                    if k not in total_mc.keys():
-                        total_mc.update({k: 0})
-                    else:
-                        total_mc[k] += 1
-        return total_mc
