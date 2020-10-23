@@ -98,11 +98,15 @@ class VMRkCalculator(BaseCalculator):
             # --------------- CONDITIONS ---------------
             if vertex in self.inc_nodes:
                 i += 1
+            else:
+                i = 0
             # --------------- CONDITIONS ---------------
             for nextv in set(self.graph[vertex]) - set(path):  # set({a : b, c : d}) == {a,c}
                 if nextv == goal:
                     if nextv in self.inc_nodes:
                         i += 1
+                    else:
+                        i = 0
                     paths.append(MPath(path + [nextv], i))
                 else:
                     stack.append((nextv, MPath(path + [nextv], i)))
@@ -263,6 +267,7 @@ class VMRkTelNetCalculator(BaseTelNetCalculator, VMRkCalculator):
         if mass is None:
             raise ValueError('Argument "mass" is not passed.')
 
+
         paths = TNMPathCollection([]) # массив кортежей правильных путей и их длительностей (путь, время пути) всех итоговых путей
         i = 0  # счетчик запрещенных вершин
         t = 0  # время прохождения по пути, t = m / v
@@ -285,11 +290,10 @@ class VMRkTelNetCalculator(BaseTelNetCalculator, VMRkCalculator):
                 if (nextv not in self.inc_nodes) or (i < k):  # допустимость по условию VMRk
                     # ---------------- ORIGINAL START ----------
                     if nextv == goal:
-                        if vertex in self.inc_nodes:
+                        if nextv in self.inc_nodes:
                             i += 1
                         else:
                             i = 0
-
                         v = self.graph[vertex][nextv]
                         t += mass / v
 
@@ -335,7 +339,7 @@ class VMRkTelNetCalculator(BaseTelNetCalculator, VMRkCalculator):
                 # --------------- CONDITIONS ---------------
                 for nextv in set(self.graph[vertex]) - set(path):  # set({a : b, c : d}) == {a,c}
                     if nextv == goal:
-                        if vertex in self.inc_nodes:
+                        if nextv in self.inc_nodes:
                             i += 1
                         else:
                             i = 0
