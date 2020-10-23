@@ -4,11 +4,14 @@ import json
 # TODO: решить вопрос с кодировкой пакета (, encoding: str = 'utf-8')
 # TODO: инициализровать пакет заголовком и данными
 
-class BasePackage:
+class BasePacket:
     def __init__(self, headings: dict, data: str):
         self.headings = headings
 
         self.data = data
+
+    def __repr__(self):
+        return f'BasePacket. Start: {self.start}, Goal: {self.goal}, Size: {self.size}, Stream ID: {self.stream_id}'
 
     @property
     def start(self):
@@ -25,8 +28,13 @@ class BasePackage:
         return _goal
 
     @property
+    def stream_id(self):
+        _stream_id = self.headings.get('stream_id', -1)
+        return _stream_id
+
+    @property
     def tol(self):
-        _tol = self.headings.get('goal', float('inf'))
+        _tol = self.headings.get('tol', float('inf'))
         return _tol
 
     @property

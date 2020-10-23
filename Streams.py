@@ -1,6 +1,6 @@
 import json
 
-from Packages import BasePackage
+from Packets import BasePacket
 
 # TODO: Поток составляется из сообщения, и сам разбивается на пакетики. Мы зададим либо количество пакетов в потоке,
 #  либо размер единичного пакета
@@ -11,52 +11,63 @@ from Packages import BasePackage
 
 
 class BaseStream:
-    def __init__(self, start: str, goal: str, message: str, package_size: int, package_tol: int = None):
+    def __init__(self, start: str, goal: str, message: str, packet_size: int, packet_tol: int = None):
         self.start = start
         self.goal = goal
 
-        self.message = message
-        self.package_size = package_size
+        self.id = id(self)
 
-        if package_tol is None:
-            self.package_tol = float('inf')
+        self.message = message
+        self.packet_size = packet_size
+
+        if packet_tol is None:
+            self.packet_tol = float('inf')
         else:
-            self.package_tol = package_tol
+            self.packet_tol = packet_tol
+
+        self.pkt_data_len = self._pkt_data_len
+
+    def __repr__(self):
+        return f'BaseStream. '
 
     @property
-    def headings(self):
+    def pkt_headings(self):
         return {
             'start': self.start,
             'goal': self.goal,
-            'tol': self.package_tol,
+            'tol': self.packet_tol,
+            'stream_id': self.id
         }
 
     @property
-    def _headings(self):
-        return json.dumps(self.headings)
+    def _pkt_headings(self):
+        return json.dumps(self.pkt_headings)
 
     @property
-    def headings_size(self):
+    def pkt_headings_size(self):
         """
         Returns
         -------
         Размер заголовков пакета в байтах. Пакет рассматривается как строка в формате utf-8.
         """
-        return len(self._headings) * 2 # потому что в utf-8 символ занимает 2 байта
+        return len(self._pkt_headings) * 2 # потому что в utf-8 символ занимает 2 байта
 
     @property
-    def _package_data_len(self):
-        return int((self.package_size - self.headings_size) / 2)
+    def _pkt_data_len(self):
+        r = int((self.packet_size - self.pkt_headings_size) / 2) - len(' "data": "",')
+        if r <= 0:
+            raise ValueError(f'''Packet size is too small. It must be greater, then {self.pkt_headings_size + 2 * len(' "data": "",') + 1}''')
+        return r
 
     @property
-    def packages(self):
+    def packets(self):
         res = []
-        for i in range(0, len(self.message), self._package_data_len):
-            res.append(BasePackage(headings=self.headings, data=self.message[i:i + self._package_data_len]))
+        for i in range(0, len(self.message), self.pkt_data_len):
+            res.append(BasePacket(headings=self.pkt_headings, data=self.message[i:i + self.pkt_data_len]))
         return res
 
     def __len__(self):
-        return len(self.packages)
+        return len(self.packets)
 
     def size(self):
-        return sum([pkg.size for pkg in self.packages])
+        return sum([pkt.size for pkt in self.packets])
