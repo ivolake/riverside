@@ -2,12 +2,8 @@ import json
 
 from Packets import BasePacket
 
-# TODO: Поток составляется из сообщения, и сам разбивается на пакетики. Мы зададим либо количество пакетов в потоке,
-#  либо размер единичного пакета
 
 # TODO: реализовать хранение потока через генератор (???) (экономия памяти взамен на одноразовость сущности)
-
-# TODO SOLVE_BUG: package_size и настоящий размер пакектов не совпадают
 
 
 class BaseStream:
@@ -28,7 +24,10 @@ class BaseStream:
         self.pkt_data_len = self._pkt_data_len
 
     def __repr__(self):
-        return f'BaseStream. '
+        return f'BaseStream. Start: {self.start}, Goal: {self.goal}, Packets size: {self.packet_size}, Size: {self.size}, ID: {self.id}'
+
+    def __len__(self):
+        return len(self.packets)
 
     @property
     def pkt_headings(self):
@@ -66,8 +65,6 @@ class BaseStream:
             res.append(BasePacket(headings=self.pkt_headings, data=self.message[i:i + self.pkt_data_len]))
         return res
 
-    def __len__(self):
-        return len(self.packets)
-
+    @property
     def size(self):
         return sum([pkt.size for pkt in self.packets])

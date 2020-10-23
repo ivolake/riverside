@@ -285,6 +285,11 @@ class VMRkTelNetCalculator(BaseTelNetCalculator, VMRkCalculator):
                 if (nextv not in self.inc_nodes) or (i < k):  # допустимость по условию VMRk
                     # ---------------- ORIGINAL START ----------
                     if nextv == goal:
+                        if vertex in self.inc_nodes:
+                            i += 1
+                        else:
+                            i = 0
+
                         v = self.graph[vertex][nextv]
                         t += mass / v
 
@@ -325,11 +330,15 @@ class VMRkTelNetCalculator(BaseTelNetCalculator, VMRkCalculator):
                 # --------------- CONDITIONS ---------------
                 if vertex in self.inc_nodes:
                     i += 1
+                else:
+                    i = 0
                 # --------------- CONDITIONS ---------------
                 for nextv in set(self.graph[vertex]) - set(path):  # set({a : b, c : d}) == {a,c}
                     if nextv == goal:
-                        if nextv in self.inc_nodes:
+                        if vertex in self.inc_nodes:
                             i += 1
+                        else:
+                            i = 0
 
                         v = self.graph[vertex][nextv]
                         t += mass / v
