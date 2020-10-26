@@ -4,7 +4,7 @@ import additions as adds
 from Calculators import BaseCalculator, VMRkCalculator, MNRkCalculator, BaseTelNetCalculator, VMRkTelNetCalculator, \
     MNRkTelNetCalculator
 from Drawers import BaseDrawer
-from Paths import PathCollection, TNMPathCollection, MPathCollection
+from Paths import PathCollection, MPathCollection
 
 
 class BaseGraph:

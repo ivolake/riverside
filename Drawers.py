@@ -1,23 +1,22 @@
-import operator
-from itertools import permutations, chain
-from random import randint
+from itertools import chain
 from typing import Tuple
 
 import matplotlib.pyplot as plt
 import networkx as nx
 from numpy import random
 # from random import randint
-import os
+# import os
 
 from DrawersSupport import TextBoxParams, BaseDrawerConfig
 import Graphs
-from Paths import PathCollection, MPathCollection, TNMPathCollection, TNPathCollection
+from Paths import PathCollection
 from config import OUTPUT_PATH
 from additions import generate_separate_graph_and_weights, generate_pos, generate_path_edges
 
 
 class BaseDrawer():
     def __init__(self, graph: 'Graphs.BaseGraph'):
+    # def __init__(self, graph):
         self.graph = graph
 
         self.drawer_config = BaseDrawerConfig()
@@ -30,9 +29,9 @@ class BaseDrawer():
     @property
     def figure_size(self) -> Tuple[int, int]:
         if self._paths is not None:
-            return (int(13 * self.nodes_count / 9), int(7 * self.nodes_count / 9))
+            return int(13 * self.nodes_count / 9), int(7 * self.nodes_count / 9)
         else:
-            return (int(13 * self.nodes_count / 11), int(7 * self.nodes_count / 11))
+            return int(13 * self.nodes_count / 11), int(7 * self.nodes_count / 11)
 
     @property
     def _edges_colors(self):
