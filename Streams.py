@@ -1,3 +1,11 @@
+import hashlib
+
+from Packets import BasePacket
+
+
+# TODO: реализовать хранение потока через генератор (???) (экономия памяти взамен на одноразовость сущности)
+
+
 import json
 
 from Packets import BasePacket
@@ -24,23 +32,18 @@ class BaseStream:
         self.pkt_data_len = self._pkt_data_len
 
     def __repr__(self):
-        return f'BaseStream. Start: {self.start}, Goal: {self.goal}, Packets size: {self.packet_size}, Size: {self.size}, ID: {self.id}'
+        raise NotImplementedError
 
     def __len__(self):
         return len(self.packets)
 
     @property
     def pkt_headings(self):
-        return {
-            'start': self.start,
-            'goal': self.goal,
-            'tol': self.packet_tol,
-            'stream_id': self.id
-        }
+        return NotImplementedError
 
     @property
     def _pkt_headings(self):
-        return json.dumps(self.pkt_headings)
+        return json.dumps(self.pkt_headings, ensure_ascii=False)
 
     @property
     def pkt_headings_size(self):
@@ -60,11 +63,72 @@ class BaseStream:
 
     @property
     def packets(self):
+        raise NotImplementedError
+
+    @property
+    def size(self):
+        return sum([pkt.size for pkt in self.packets])
+
+    @property
+    def message_hash(self):
+        return hashlib.md5(self.message.encode('utf-8')).hexdigest()
+
+
+class ConsistentStream(BaseStream):
+    def __init__(self, start: str, goal: str, message: str, packet_size: int, packet_tol: int = None):
+        super().__init__(start, goal, message, packet_size, packet_tol)
+
+    def __repr__(self):
+        return f'ConsistentStream(' \
+               f'start: {self.start}, ' \
+               f'goal: {self.goal}, ' \
+               f'packets_size: {self.packet_size}, ' \
+               f'size: {self.size}, ' \
+               f'id: {self.id})'
+
+    @property
+    def pkt_headings(self):
+        return {
+            'start': self.start,
+            'goal': self.goal,
+            'sid': self.id,
+            'hash': 'None',
+            'tol': self.packet_tol,
+        }
+
+    @property
+    def packets(self):
         res = []
         for i in range(0, len(self.message), self.pkt_data_len):
             res.append(BasePacket(headings=self.pkt_headings, data=self.message[i:i + self.pkt_data_len]))
         return res
 
+class SimultaneousStream(BaseStream):
+    def __init__(self, start: str, goal: str, message: str, packet_size: int, packet_tol: int = None):
+        super().__init__(start, goal, message, packet_size, packet_tol)
+
+    def __repr__(self):
+        return f'SimultaneousStream(' \
+               f'start: {self.start}, ' \
+               f'goal: {self.goal}, ' \
+               f'packets_size: {self.packet_size}, ' \
+               f'size: {self.size}, ' \
+               f'id: {self.id})'
+
     @property
-    def size(self):
-        return sum([pkt.size for pkt in self.packets])
+    def pkt_headings(self):
+        return {
+            'start': self.start,
+            'goal': self.goal,
+            'sid': self.id,
+            'pid': 'None',
+            'hash': 'None',
+            'tol': self.packet_tol,
+        }
+
+    @property
+    def packets(self):
+        res = []
+        for i in range(0, len(self.message), self.pkt_data_len):
+            res.append(BasePacket(headings=dict(self.pkt_headings, **{'pid': i}), data=self.message[i:i + self.pkt_data_len]))
+        return res

@@ -49,6 +49,13 @@ class RandomJitter(Jitter):
 
         self._additional_power = accuracy
 
+        self._random_low = random.randrange(self.lowest_low * self._highest_low_order_multiplier,
+                                self.highest_low * self._highest_low_order_multiplier) \
+               / self._highest_low_order_multiplier
+        self._random_high = random.randrange(self.lowest_high * self._highest_high_order_multiplier,
+                                self.highest_high * self._highest_high_order_multiplier) \
+               / self._highest_high_order_multiplier
+
         super().__init__(self._random_low, self._random_high)
 
     @property
@@ -60,18 +67,6 @@ class RandomJitter(Jitter):
     def _highest_high_order_multiplier(self):
         i = len(str(self.highest_high).replace('.', ''))
         return 10 ** (i - 1 + self._additional_power)
-
-    @property
-    def _random_low(self):
-        return random.randrange(self.lowest_low * self._highest_low_order_multiplier,
-                                self.highest_low * self._highest_low_order_multiplier) \
-               / self._highest_low_order_multiplier
-
-    @property
-    def _random_high(self):
-        return random.randrange(self.lowest_high * self._highest_high_order_multiplier,
-                                self.highest_high * self._highest_high_order_multiplier) \
-               / self._highest_high_order_multiplier
 
 
 class ReceivedMessageReport:

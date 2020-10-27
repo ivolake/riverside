@@ -1,6 +1,9 @@
 import json
+import random
+import string
 from collections import Iterable
 from typing import Tuple
+
 
 class FineDict(dict):
     def __init__(self):
@@ -9,10 +12,11 @@ class FineDict(dict):
     def __repr__(self):
         return json.dumps(self, indent=4)
 
+
 def generate_pos(g: dict) -> dict:
-    '''
+    """
     Задает позиции для вершин графа осциллирующими около двух парабол, сложенных овалом
-    '''
+    """
     positions = dict()
     V = list(g.keys())
     l_V = len(V)
@@ -20,48 +24,51 @@ def generate_pos(g: dict) -> dict:
     y = 3
     positions.update({V[0]: [x, y]})
 
-    if (l_V % 2 != 0): # если количество вершин нечетно то:
+    if (l_V % 2 != 0):  # если количество вершин нечетно то:
         p = 1
     else:
         p = 0
 
     for i in range(1, l_V - p):
-        X = x + ((i+1) // 2) - 0.2
+        X = x + ((i + 1) // 2) - 0.2
         if (i % 2 == 1):
-            if ((i+3) % 4 == 0):
-                Y =  2 - ((i - (l_V - p) // 2) ** 2 - (l_V - p) ** 2 // 4 - 0.3) * 0.25 + 3 # или вместо 3 5*random.ranf() + 10
+            if ((i + 3) % 4 == 0):
+                Y = 2 - ((i - (l_V - p) // 2) ** 2 - (
+                            l_V - p) ** 2 // 4 - 0.3) * 0.25 + 3  # или вместо 3 5*random.ranf() + 10
             else:
-                Y =  2 - ((i - (l_V - p) // 2) ** 2 - (l_V - p) ** 2 // 4 - 0.3) * 0.25 - 3
+                Y = 2 - ((i - (l_V - p) // 2) ** 2 - (l_V - p) ** 2 // 4 - 0.3) * 0.25 - 3
         else:
             if (i % 4 == 0):
-                Y =  -2 + ((i - (l_V - p) // 2) ** 2  - (l_V - p) ** 2 // 4) * 0.25 + 3
+                Y = -2 + ((i - (l_V - p) // 2) ** 2 - (l_V - p) ** 2 // 4) * 0.25 + 3
             else:
-                Y =  -2 + ((i - (l_V - p) // 2) ** 2  - (l_V - p) ** 2 // 4) * 0.25 - 3 # умное распределние высот по параболе (бизигзапарабольное распределение)
+                Y = -2 + ((i - (l_V - p) // 2) ** 2 - (
+                            l_V - p) ** 2 // 4) * 0.25 - 3  # умное распределние высот по параболе (бизигзапарабольное распределение)
 
         positions.update({V[i]: [X, Y]})
-
 
         # positions.update({V[i]: [x + ((i+1) // 2), y + ( (2) if (i % 2 == 1) else (-2)) ]}) # если i четный, то прибавляем -2, нечетный -- +2
         # positions.update({V[i]: [x + ((i+1) // 2), y + (   ( 2 - (abs(i - (l_V - p) // 2) - (l_V - p) // 2) * 0.25 ) if (i % 2 == 1)     else (-2 + (abs(i - (l_V - p) // 2) - (l_V - p) // 2) * 0.25 )   ) ]}) # умное распределние высот по графику модуля
     if (p == 1):
-        positions.update({V[l_V-2]: [x + l_V // 2, y]})
-        positions.update({V[l_V-1]: [x + l_V // 2 + 1, y]})
+        positions.update({V[l_V - 2]: [x + l_V // 2, y]})
+        positions.update({V[l_V - 1]: [x + l_V // 2 + 1, y]})
     else:
-        positions.update({V[l_V-1]: [x + l_V // 2, y]})
+        positions.update({V[l_V - 1]: [x + l_V // 2, y]})
 
     return positions
 
+
 def generate_path_edges(p: list) -> list:
-    '''
+    """
     Превращает список вершин в список ребер
-    '''
+    """
     result = []
-    for i in range(0,len(p)-1):
-        result.append((p[i],p[i+1]))
+    for i in range(0, len(p) - 1):
+        result.append((p[i], p[i + 1]))
     return result
 
+
 def generate_separate_graph_and_weights(g: dict) -> Tuple[dict, dict]:
-    '''
+    """
     Функция для взвешенных графов, которая рабивает такой граф на невзвешенный граф и словарь с ребрами и их весами
     Пример:
         Входные данные:
@@ -106,19 +113,20 @@ def generate_separate_graph_and_weights(g: dict) -> Tuple[dict, dict]:
                              ('8', '10'): '5',
                              ('9', '10'): '25'}
 
-    '''
+    """
 
-    new_g = dict()                         # новый граф без весов в стандартном виде
-    edges_with_labels = dict()             # отдельный словарь для весов {('1','2') : weight1, ('3','4') : weight2}
-    for vi in list(g.keys()):              # иду по вершинам графа. vi - текушая вершина
+    new_g = dict()  # новый граф без весов в стандартном виде
+    edges_with_labels = dict()  # отдельный словарь для весов {('1','2') : weight1, ('3','4') : weight2}
+    for vi in list(g.keys()):  # иду по вершинам графа. vi - текушая вершина
         neighbours = []
-        for vj in list(g[vi].keys()):      # иду по соседям vi
+        for vj in list(g[vi].keys()):  # иду по соседям vi
             neighbours.append(vj)
-            edges_with_labels.update({(vi,vj) : str(g[vi][vj])})
+            edges_with_labels.update({(vi, vj): str(g[vi][vj])})
 
-        new_g.update({vi:neighbours})
+        new_g.update({vi: neighbours})
 
-    return((new_g, edges_with_labels))
+    return new_g, edges_with_labels
+
 
 def deweight(graph: dict) -> Iterable:
     """
@@ -129,6 +137,7 @@ def deweight(graph: dict) -> Iterable:
     for v in list(graph.keys()):
         graph[v] = list(graph[v].keys())
     return graph
+
 
 def get_edges(graph: dict, weighted: bool):
     """
@@ -153,14 +162,15 @@ def get_edges(graph: dict, weighted: bool):
                 edges.update({(vi, vj): float(graph[vi][vj])})
     return edges
 
+
 def damerau_levenshtein_distance(s1, s2):
     d = {}
     lenstr1 = len(s1)
     lenstr2 = len(s2)
-    for i in range(-1,lenstr1+1):
-        d[(i,-1)] = i+1
-    for j in range(-1,lenstr2+1):
-        d[(-1,j)] = j+1
+    for i in range(-1, lenstr1 + 1):
+        d[(i, -1)] = i + 1
+    for j in range(-1, lenstr2 + 1):
+        d[(-1, j)] = j + 1
 
     for i in range(lenstr1):
         for j in range(lenstr2):
@@ -168,11 +178,67 @@ def damerau_levenshtein_distance(s1, s2):
                 cost = 0
             else:
                 cost = 1
-            d[(i,j)] = min(
-                           d[(i-1,j)] + 1, # deletion
-                           d[(i,j-1)] + 1, # insertion
-                           d[(i-1,j-1)] + cost, # substitution
-                          )
-            if i and j and s1[i]==s2[j-1] and s1[i-1] == s2[j]:
-                d[(i,j)] = min (d[(i,j)], d[i-2,j-2] + cost) # transposition
-    return d[lenstr1-1,lenstr2-1]
+            d[(i, j)] = min(
+                d[(i - 1, j)] + 1,  # deletion
+                d[(i, j - 1)] + 1,  # insertion
+                d[(i - 1, j - 1)] + cost,  # substitution
+            )
+            if i and j and s1[i] == s2[j - 1] and s1[i - 1] == s2[j]:
+                d[(i, j)] = min(d[(i, j)], d[i - 2, j - 2] + cost)  # transposition
+    return d[lenstr1 - 1, lenstr2 - 1]
+
+
+def ID_random_insertion(info):
+    """
+    ID - Information Distortion
+    Операция по случайной вставке
+    Parameters
+    ----------
+    info
+
+    Returns
+    -------
+
+    """
+    i = random.randint(0, len(info))
+    return info[0:i] + random.choice(string.printable[:-2]) + info[i:]
+
+
+def ID_random_deletion(info):
+    """
+    ID - Information Distortion
+    Операция по случайному удалению
+    Parameters
+    ----------
+    info
+
+    Returns
+    -------
+
+    """
+    i = random.randint(0, len(info))
+    return info[0:i] + info[i + 1:]
+
+
+def ID_random_substitution(info):
+    """
+    ID - Information Distortion
+    Операция по случайной замене
+    Parameters
+    ----------
+    info
+
+    Returns
+    -------
+
+    """
+    i = random.randint(0, len(info))
+    return info[0:i] + random.choice(string.printable[:-2]) + info[i + 1:]
+
+def information_distortion(info: str, dist_level: int = 1):
+    distorted = info
+    for i in range(0, dist_level):
+        distorted = random.choice([ID_random_insertion,
+                                   ID_random_deletion,
+                                   ID_random_substitution])(distorted)
+    return distorted

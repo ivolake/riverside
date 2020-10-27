@@ -1,3 +1,4 @@
+import hashlib
 import json
 
 
@@ -6,48 +7,27 @@ import json
 
 class BasePacket:
     def __init__(self, headings: dict, data: str):
-        self.headings = headings
+        self.data = data.replace('\n', ' ').replace('\t', '    ').replace('\r', '')
 
-        self.data = data
+        self.headings = headings
+        self.headings.update({'hash': self.hash})
+
+        self.struct = dict(self.headings, **{'data': self.data})
 
     def __repr__(self):
-        return f'BasePacket. Start: {self.start}, Goal: {self.goal}, Size: {self.size}, Stream ID: {self.stream_id}'
-
-    @property
-    def start(self):
-        _start = self.headings.get('start', None)
-        if _start is None:
-            raise ValueError('Argument "start" is not passed')
-        return _start
-
-    @property
-    def goal(self):
-        _goal = self.headings.get('goal', None)
-        if _goal is None:
-            raise ValueError('Argument "goal" is not passed')
-        return _goal
-
-    @property
-    def stream_id(self):
-        _stream_id = self.headings.get('stream_id', -1)
-        return _stream_id
-
-    @property
-    def tol(self):
-        _tol = self.headings.get('tol', float('inf'))
-        return _tol
-
-    @property
-    def struct(self):
-        return dict(self.headings, **{'data': self.data})
+        return f'BasePacket(headings: {self._headings})'
 
     @property
     def _headings(self):
-        return json.dumps(self.headings)
+        return json.dumps(self.headings, ensure_ascii=False)
 
     @property
     def _struct(self):
-        return json.dumps(self.struct)
+        return json.dumps(self.struct, ensure_ascii=False)
+
+    @property
+    def hash(self):
+        return hashlib.md5(self.data.encode('utf-8')).hexdigest()
 
     @property
     def size(self):

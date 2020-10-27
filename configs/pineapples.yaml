@@ -1,10 +1,13 @@
 graph:
   path: C:\Users\bzakh\OneDrive\Documents\Python_Scripts\Networks_Science_2\Graph_Templates\wdigraph2.txt
    # ^ Указывается адрес на файл с матрицей смежности файла (txt, csv)
-  type: mnrk_telnet
+  type: mnrk
    # ^ Тип графа.
-   # Возможные типы: standard, vmrk, mnrk, telnet,
-   # vmrk_telnet, mnrk_telnet, tb_telnet, vmrk_tb_telnet, mnrk_tb_telnet
+   # Возможные значения: standard, vmrk, mnrk, telnet,
+   # vmrk_telnet, mnrk_telnet
+  transmission: consistent
+   # ^ Тип передачи данных по Сети.
+   # Возможные значения: consistent, simultaneous
   options:
     inc_nodes: [1, 4, 8, 9, 13]
     dec_nodes: [3, 4, 6, 11]
