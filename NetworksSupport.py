@@ -1,4 +1,7 @@
 import random
+from typing import List
+
+from Streams import BaseStream
 
 
 class Jitter:
@@ -13,7 +16,7 @@ class Jitter:
         self._additional_power = accuracy
 
     def __repr__(self):
-        return f'Jitter function with low={self.low}, high={self.high}'
+        return f'Jitter(low={self.low}, high={self.high}, accuracy={self._additional_power})'
 
     def __call__(self) -> float:
         return random.randrange(self._low, self._high)/self._order_multiplier
@@ -68,7 +71,26 @@ class RandomJitter(Jitter):
         i = len(str(self.highest_high).replace('.', ''))
         return 10 ** (i - 1 + self._additional_power)
 
+class Traffic:
+    def __init__(self, streams: List[BaseStream]):
+        self.streams = streams
+
+    @property
+    def start_nodes(self):
+        return [s.start for s in self.streams]
+
+    @property
+    def goal_nodes(self):
+        return [s.goal for s in self.streams]
+
+
+    def __getitem__(self, item):
+        return self.streams[item]
+
+    def pop_packets(self):
+        return [s.pop(0) for s in self.streams]
 
 class ReceivedMessageReport:
     def __init__(self):
         ...
+

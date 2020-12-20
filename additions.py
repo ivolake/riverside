@@ -2,7 +2,8 @@ import json
 import random
 import string
 from collections import Iterable
-from typing import Tuple
+from typing import Tuple, List
+import operator as op
 
 
 class FineDict(dict):
@@ -11,6 +12,22 @@ class FineDict(dict):
 
     def __repr__(self):
         return json.dumps(self, indent=4)
+
+class Representation:
+    def __init__(self, representing_obj, representing_fields: List = None):
+        self.representing_obj = representing_obj
+
+        if representing_fields is not None:
+            self.representing_fields = representing_fields
+        else:
+            self.representing_fields = self.representing_obj.__dict__
+
+    def __call__(self):
+        representing_fields_str = []
+        for f in self.representing_fields:
+            representing_fields_str.append(f'{f}={op.attrgetter(f)(self.representing_obj)}')
+
+        return f'{self.representing_obj.__class__.__name__}({", ".join(representing_fields_str)})'
 
 
 def generate_pos(g: dict) -> dict:

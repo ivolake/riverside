@@ -18,6 +18,8 @@ from Graphs import BaseGraph, VMRkGraph, MNRkGraph, BaseTelNet, VMRkTelNet, MNRk
 # TODO: Передача потока в "реальном времени", т.е. с учетом емкости и задержки обработки узлов - это разбиаение
 #  маршрута на участки между нодами и подсчет на каждой итоговой нагрузки на ноду, прибавление ее задежрки и т.д.
 
+# TODO: Сделать везде repr через additions.Representation!!!!!!!
+
 # TODO: Переделать всю документацию!
 
 def get_graph(config: dict) -> BaseGraph:

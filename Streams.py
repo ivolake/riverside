@@ -1,4 +1,5 @@
 import hashlib
+from typing import List
 
 from Packets import BasePacket
 
@@ -12,12 +13,13 @@ from Packets import BasePacket
 
 
 # TODO: реализовать хранение потока через генератор (???) (экономия памяти взамен на одноразовость сущности)
+from additions import Representation
 
 
 class BaseStream:
-    def __init__(self, start: str, goal: str, message: str, packet_size: int, packet_tol: int = None):
-        self.start = start
-        self.goal = goal
+    def __init__(self, sender: str, receiver: str, message: str, packet_size: int, packet_tol: int = None):
+        self.sender = sender
+        self.receiver = receiver
 
         self.id = id(self)
 
@@ -31,11 +33,15 @@ class BaseStream:
 
         self.pkt_data_len = self._pkt_data_len
 
+        self.packets = [NotImplemented]
+
+
     def __repr__(self):
-        raise NotImplementedError
+        return Representation(self, ['sender', 'receiver', 'packet_size', 'size', 'id'])()
 
     def __len__(self):
         return len(self.packets)
+
 
     @property
     def pkt_headings(self):
@@ -62,10 +68,6 @@ class BaseStream:
         return r
 
     @property
-    def packets(self):
-        raise NotImplementedError
-
-    @property
     def size(self):
         return sum([pkt.size for pkt in self.packets])
 
@@ -74,61 +76,98 @@ class BaseStream:
         return hashlib.md5(self.message.encode('utf-8')).hexdigest()
 
 
-class ConsistentStream(BaseStream):
-    def __init__(self, start: str, goal: str, message: str, packet_size: int, packet_tol: int = None):
-        super().__init__(start, goal, message, packet_size, packet_tol)
+    def pop(self, index):
+        return self.packets.pop(index)
+
+
+class TCPStream(BaseStream):
+    def __init__(self, sender: str, receiver: str, message: str, packet_size: int, packet_tol: int = None):
+        super().__init__(sender, receiver, message, packet_size, packet_tol)
+
+        self.packets = []
+
+        for n, i in enumerate(range(0, len(self.message), self.pkt_data_len)):
+            headings = dict(self.pkt_headings, **{
+                'pid': n,
+                'received_answer': False,
+                'sending_attempts': 0,
+                'is_answer': False,
+            })
+            self.packets.append(
+                BasePacket(headings=headings, data=self.message[i:i + self.pkt_data_len]))
 
     def __repr__(self):
-        return f'ConsistentStream(' \
-               f'start: {self.start}, ' \
-               f'goal: {self.goal}, ' \
-               f'packets_size: {self.packet_size}, ' \
-               f'size: {self.size}, ' \
-               f'id: {self.id})'
+        return Representation(self, ['sender', 'receiver', 'packet_size', 'size', 'id'])()
 
     @property
     def pkt_headings(self):
         return {
-            'start': self.start,
-            'goal': self.goal,
-            'sid': self.id,
-            'hash': 'None',
-            'tol': self.packet_tol,
-        }
-
-    @property
-    def packets(self):
-        res = []
-        for i in range(0, len(self.message), self.pkt_data_len):
-            res.append(BasePacket(headings=self.pkt_headings, data=self.message[i:i + self.pkt_data_len]))
-        return res
-
-class SimultaneousStream(BaseStream):
-    def __init__(self, start: str, goal: str, message: str, packet_size: int, packet_tol: int = None):
-        super().__init__(start, goal, message, packet_size, packet_tol)
-
-    def __repr__(self):
-        return f'SimultaneousStream(' \
-               f'start: {self.start}, ' \
-               f'goal: {self.goal}, ' \
-               f'packets_size: {self.packet_size}, ' \
-               f'size: {self.size}, ' \
-               f'id: {self.id})'
-
-    @property
-    def pkt_headings(self):
-        return {
-            'start': self.start,
-            'goal': self.goal,
+            'protocol': 'TCP',
+            'sender': self.sender,
+            'receiver': self.receiver,
+            'travel_time': 0,
             'sid': self.id,
             'pid': 'None',
             'hash': 'None',
+            'next_hop': 'None',
+            'received_answer': False,
+            'sending_attempts': 0,
+            'is_answer': False,
             'tol': self.packet_tol,
         }
 
+    def create_answer_to_packet(self, pid: int):
+        """
+
+        Parameters
+        ----------
+        pid - id пакета, для которого создается ответный пакет
+
+        Returns
+        -------
+
+        """
+        headings = {
+            'protocol': 'TCP',
+            'sender': self.receiver,
+            'receiver': self.sender,
+            'sid': self.id,
+            'parent_pid': pid,
+            'hash': 'None',
+            'next_hop': 'None',
+            'is_answer': True,
+        }
+        pkt = BasePacket(headings=headings, data='')
+        self.packets.append(pkt)
+        return pkt
+
+class UDPStream(BaseStream):
+    def __init__(self, sender: str, receiver: str, message: str, packet_size: int, packet_tol: int = None):
+        super().__init__(sender, receiver, message, packet_size, packet_tol)
+
+        self.packets = []
+
+        for n, i in enumerate(range(0, len(self.message), self.pkt_data_len)):
+            headings = dict(self.pkt_headings, **{
+                'pid': n,
+            })
+            self.packets.append(
+                BasePacket(headings=headings, data=self.message[i:i + self.pkt_data_len]))
+
+
+    def __repr__(self):
+        return Representation(self, ['sender', 'receiver', 'packet_size', 'size', 'id'])()
+
     @property
-    def packets(self):
-        res = []
-        for i in range(0, len(self.message), self.pkt_data_len):
-            res.append(BasePacket(headings=dict(self.pkt_headings, **{'pid': i}), data=self.message[i:i + self.pkt_data_len]))
-        return res
+    def pkt_headings(self):
+        return {
+            'protocol': 'UDP',
+            'sender': self.sender,
+            'receiver': self.receiver,
+            'travel_time': 0,
+            'sid': self.id,
+            'pid': 'None',
+            'hash': 'None',
+            'next_hop': 'None',
+            'tol': self.packet_tol,
+        }

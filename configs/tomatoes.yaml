@@ -5,7 +5,7 @@ graph:
    # ^ Тип графа.
    # Возможные значения: standard, vmrk, mnrk, telnet,
    # vmrk_telnet, mnrk_telnet
-  transmission: consistent
+  protocol: TCP
    # ^ Тип передачи данных по Сети.
    # Возможные значения: consistent, simultaneous
   options:
