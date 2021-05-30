@@ -1,0 +1,25 @@
+streams:
+  "1":
+    message_path: D:\OneDrive\Documents\Python_Scripts\Networks_Science_2\messages\message1_1.txt
+    sender: "1"
+    receiver: "15"
+    packet_size: 480
+    protocol: UDP
+    special:
+      k: 1
+  "2":
+    message_path: D:\OneDrive\Documents\Python_Scripts\Networks_Science_2\messages\message1_2.txt
+    sender: "14"
+    receiver: "7"
+    packet_size: default
+    protocol: TCP
+    special:
+      k: 2
+  "3":
+    message_path: D:\OneDrive\Documents\Python_Scripts\Networks_Science_2\messages\message1_3.txt
+    sender: "1"
+    receiver: "17"
+    packet_size: 500
+    protocol: UDP
+    special:
+      k: 3

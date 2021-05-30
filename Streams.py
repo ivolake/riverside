@@ -1,47 +1,76 @@
 import hashlib
-from typing import List
-
-from Packets import BasePacket
-
-
-# TODO: реализовать хранение потока через генератор (???) (экономия памяти взамен на одноразовость сущности)
-
-
 import json
+import math
 
 from Packets import BasePacket
-
+from additions import Representation
 
 # TODO: реализовать хранение потока через генератор (???) (экономия памяти взамен на одноразовость сущности)
-from additions import Representation
 
 
 class BaseStream:
-    def __init__(self, sender: str, receiver: str, message: str, packet_size: int, packet_tol: int = None):
-        self.sender = sender
-        self.receiver = receiver
-
-        self.id = id(self)
+    def __init__(self,
+                 message: str,
+                 sender: str,
+                 receiver: str,
+                 packet_size: int = None,
+                 packet_tol: int = None,
+                 special: dict = None):
+        self._id = str(id(self))
 
         self.message = message
-        self.packet_size = packet_size
+
+        self._sender = sender
+        self._receiver = receiver
+
+        self._special = special
+
+
 
         if packet_tol is None:
-            self.packet_tol = float('inf')
+            self._packet_tol = float('inf')
         else:
-            self.packet_tol = packet_tol
-
-        self.pkt_data_len = self._pkt_data_len
+            self._packet_tol = packet_tol
 
         self.packets = [NotImplemented]
 
+        self.__protocol = NotImplemented
 
-    def __repr__(self):
-        return Representation(self, ['sender', 'receiver', 'packet_size', 'size', 'id'])()
+        if packet_size is not None:
+            self.packet_size = packet_size
+        else:
+            estimating_data_size = math.trunc(len(self.message)/ 50) + 1 # делим размер сообщения в байтах на 30
+
+            self.packet_size = math.trunc((estimating_data_size + len(' "data": "",')) * 2 + self.pkt_headings_size) + 1
+
+        self.pkt_data_len = self._pkt_data_len
 
     def __len__(self):
         return len(self.packets)
 
+    def __repr__(self):
+        return Representation(self, ['sender', 'receiver', 'packet_size', 'size', 'id'])()
+
+
+    @property
+    def id(self):
+        return self._id
+
+    @property
+    def sender(self):
+        return self._sender
+
+    @property
+    def receiver(self):
+        return self._receiver
+
+    @property
+    def special(self):
+        return self._special
+
+    @property
+    def packet_tol(self):
+        return self._packet_tol
 
     @property
     def pkt_headings(self):
@@ -64,7 +93,7 @@ class BaseStream:
     def _pkt_data_len(self):
         r = int((self.packet_size - self.pkt_headings_size) / 2) - len(' "data": "",')
         if r <= 0:
-            raise ValueError(f'''Packet size is too small. It must be greater, then {self.pkt_headings_size + 2 * len(' "data": "",') + 1}''')
+            raise ValueError(f'''Размер пакета слишком маленький ({r}). Он должен быть больше, чем {self.pkt_headings_size + 2 * len(' "data": "",') + 1}''')
         return r
 
     @property
@@ -75,26 +104,62 @@ class BaseStream:
     def message_hash(self):
         return hashlib.md5(self.message.encode('utf-8')).hexdigest()
 
+    @property
+    def protocol(self):
+        return self.__protocol
+
 
     def pop(self, index):
-        return self.packets.pop(index)
+        if len(self.packets) > 0:
+            return self.packets.pop(index)
+        else:
+            return None
+
+    def get_by_pid(self, pid: str):
+        p = None
+        i = 0
+        while p is None and i < len(self):
+            cp = self.packets[i]
+            if cp.pid == pid:
+                p = cp
+            else:
+                i += 1
+        return p
+
+    def get_by_id(self, id: str):
+        p = None
+        i = 0
+        while p is None and i < len(self):
+            cp = self.packets[i]
+            if cp.id == id:
+                p = cp
+            else:
+                i += 1
+        return p
+
 
 
 class TCPStream(BaseStream):
-    def __init__(self, sender: str, receiver: str, message: str, packet_size: int, packet_tol: int = None):
-        super().__init__(sender, receiver, message, packet_size, packet_tol)
+    def __init__(self, message: str, sender: str, receiver: str, packet_size: int = None, packet_tol: int = None, special: dict = None):
+        super().__init__(message, sender, receiver, packet_size, packet_tol, special)
 
         self.packets = []
 
+        self.__protocol = 'TCP'
+
         for n, i in enumerate(range(0, len(self.message), self.pkt_data_len)):
             headings = dict(self.pkt_headings, **{
-                'pid': n,
+                'pid': str(n),
                 'received_answer': False,
                 'sending_attempts': 0,
                 'is_answer': False,
             })
             self.packets.append(
                 BasePacket(headings=headings, data=self.message[i:i + self.pkt_data_len]))
+
+    @property
+    def protocol(self):
+        return self.__protocol
 
     def __repr__(self):
         return Representation(self, ['sender', 'receiver', 'packet_size', 'size', 'id'])()
@@ -105,23 +170,23 @@ class TCPStream(BaseStream):
             'protocol': 'TCP',
             'sender': self.sender,
             'receiver': self.receiver,
-            'travel_time': 0,
+            # 'travel_time': 0,
             'sid': self.id,
             'pid': 'None',
-            'hash': 'None',
-            'next_hop': 'None',
-            'received_answer': False,
+            # 'next_hop': 'None',
+            # 'received_answer': False,
             'sending_attempts': 0,
             'is_answer': False,
+            'is_copy': False,
             'tol': self.packet_tol,
         }
 
-    def create_answer_to_packet(self, pid: int):
+    def create_answer_to_packet(self, pkt):
         """
 
         Parameters
         ----------
-        pid - id пакета, для которого создается ответный пакет
+        pid - pid пакета, для которого создается ответный пакет
 
         Returns
         -------
@@ -132,28 +197,32 @@ class TCPStream(BaseStream):
             'sender': self.receiver,
             'receiver': self.sender,
             'sid': self.id,
-            'parent_pid': pid,
-            'hash': 'None',
-            'next_hop': 'None',
+            'pid': pkt.pid,
+            # 'next_hop': 'None',
             'is_answer': True,
         }
         pkt = BasePacket(headings=headings, data='')
-        self.packets.append(pkt)
         return pkt
 
 class UDPStream(BaseStream):
-    def __init__(self, sender: str, receiver: str, message: str, packet_size: int, packet_tol: int = None):
-        super().__init__(sender, receiver, message, packet_size, packet_tol)
+    def __init__(self, message: str, sender: str, receiver: str, packet_size: int = None, packet_tol: int = None, special: dict = None):
+        super().__init__(message, sender, receiver, packet_size, packet_tol, special)
 
         self.packets = []
 
+        self.__protocol = 'UDP'
+
         for n, i in enumerate(range(0, len(self.message), self.pkt_data_len)):
             headings = dict(self.pkt_headings, **{
-                'pid': n,
+                'pid': str(n),
             })
             self.packets.append(
                 BasePacket(headings=headings, data=self.message[i:i + self.pkt_data_len]))
 
+
+    @property
+    def protocol(self):
+        return self.__protocol
 
     def __repr__(self):
         return Representation(self, ['sender', 'receiver', 'packet_size', 'size', 'id'])()
@@ -167,7 +236,6 @@ class UDPStream(BaseStream):
             'travel_time': 0,
             'sid': self.id,
             'pid': 'None',
-            'hash': 'None',
-            'next_hop': 'None',
+            # 'next_hop': 'None',
             'tol': self.packet_tol,
         }

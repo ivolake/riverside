@@ -1,14 +1,19 @@
 import random
+from itertools import chain, compress
 from typing import List
 
+# from Nodes import BaseNode
+# from NetworksReports import MaintenanceReport
+from Packets import BasePacket
+from Paths import PathCollection, Path
 from Streams import BaseStream
+import additions as adds
+from config import BASIC_DROP_THRESHOLD
 
 
 class Jitter:
     def __init__(self, low: float, high: float,
                  accuracy: int = 0):
-        if low < 0:
-            raise ValueError('Low limit must be greater then zero.')
 
         self.low = low
         self.high = high
@@ -40,10 +45,12 @@ class RandomJitter(Jitter):
                  accuracy: int = 2):
 
         if lowest_low > lowest_high:
-            raise ValueError('Lowest low level cannot be greater than lowest high.')
+            raise ValueError('Нижняя граница для генерации нижней границы джиттера не может быть больше, чем '
+                             'нижняя граница для генерации верхней границы джиттера')
 
         if highest_low > highest_high:
-            raise ValueError('Highest low level cannot be greater than highest high.')
+            raise ValueError('Верхняя граница для генерации нижней границы джиттера не может быть больше, чем '
+                             'верхняя граница для генерации верхней границы джиттера')
 
         self.lowest_low = lowest_low
         self.highest_low = highest_low
@@ -52,11 +59,11 @@ class RandomJitter(Jitter):
 
         self._additional_power = accuracy
 
-        self._random_low = random.randrange(self.lowest_low * self._highest_low_order_multiplier,
-                                self.highest_low * self._highest_low_order_multiplier) \
+        self._random_low = random.randrange(int(self.lowest_low * self._highest_low_order_multiplier),
+                                int(self.highest_low * self._highest_low_order_multiplier)) \
                / self._highest_low_order_multiplier
-        self._random_high = random.randrange(self.lowest_high * self._highest_high_order_multiplier,
-                                self.highest_high * self._highest_high_order_multiplier) \
+        self._random_high = random.randrange(int(self.lowest_high * self._highest_high_order_multiplier),
+                                int(self.highest_high * self._highest_high_order_multiplier)) \
                / self._highest_high_order_multiplier
 
         super().__init__(self._random_low, self._random_high)
@@ -72,25 +79,211 @@ class RandomJitter(Jitter):
         return 10 ** (i - 1 + self._additional_power)
 
 class Traffic:
-    def __init__(self, streams: List[BaseStream]):
-        self.streams = streams
+    def __init__(self, streams: List[BaseStream] = None):
+        if streams is not None:
+            self.__streams = streams
+        else:
+            self.__streams = []
+
+        self.__id = str(id(self))
 
     @property
-    def start_nodes(self):
-        return [s.start for s in self.streams]
+    def sender_nodes(self):
+        return [s.sender for s in self.__streams]
 
     @property
-    def goal_nodes(self):
-        return [s.goal for s in self.streams]
+    def receiver_nodes(self):
+        return [s.receiver for s in self.__streams]
 
+    @property
+    def id(self):
+        return self.__id
+
+    def __len__(self):
+        return len(self.__streams)
 
     def __getitem__(self, item):
-        return self.streams[item]
+        return self.__streams[item]
+
+    def __repr__(self):
+        return f'Traffic(streams={self.__streams})'
 
     def pop_packets(self):
-        return [s.pop(0) for s in self.streams]
+        packets = [s.pop(0) for s in self.__streams]
+        return list(compress(packets, packets))
 
-class ReceivedMessageReport:
+    def empty(self):
+        empty_streams_num = 0
+        for s in self.__streams:
+            empty_streams_num += 1 if len(s) == 0 else 0
+        return empty_streams_num == len(self)
+
+    def add_stream(self, stream: BaseStream):
+        self.__streams.append(stream)
+
+    def flush(self):
+        self.__streams = []
+
+
+class TCPStreamData:
+    def __init__(self,
+                 stream: BaseStream,
+                 path: Path,
+                 reverse_path: Path):
+        self.stream = stream
+        self.id = stream.id
+        self.path = path
+        self.reverse_path = reverse_path
+        self.packets_time = {packet.id: 0 for packet in stream.packets} # id - уникальный идентификатор пакета как Python-объекта
+                                                                        # здесь используется id, а не pid потому, что в
+                                                                        # этом списке должны находится и копии некоторых
+                                                                        # пакетов. Пакет и его копия различаются только параметром _copy_num и id
+    def __repr__(self):
+        return adds.Representation(self, ['id', 'packets_time'])()
+
+class UDPStreamData:
+    def __init__(self,
+                 stream: BaseStream,
+                 paths: PathCollection):
+        self.stream = stream
+        self.id = stream.id
+        self.packets_paths = {packet.id: paths[i % len(paths)] for i, packet in enumerate(stream.packets)}
+        self.packets_time = {packet.id: 0 for packet in stream.packets}  # id - уникальный идентификатор пакета как Python-объекта
+                                                                         # здесь используется id, а не pid потому, что в
+                                                                         # этом списке должны находится и копии некоторых
+                                                                         # пакетов. Пакет и его копия различаются только параметром _copy_num и id
+
+    def __repr__(self):
+        return adds.Representation(self, ['id', 'packets_time'])()
+
+
+class Operator:
     def __init__(self):
+        self.__streams_data = {}
+
+    def __getitem__(self, key):
+        return self.__streams_data.get(key, None)
+
+    def __setitem__(self, key, value):
+        self.__streams_data.update({key: value})
+
+    def __repr__(self):
+        packets = list(chain([ [ None if sd.stream.get_by_id(p_id) is None else sd.stream.get_by_id(p_id).id for p_id in sd.packets_time] for sd in self.__streams_data.values()]))
+        return f'Operator(streams_ids={list(self.__streams_data.keys())}, packets={packets})'
+
+    def keys(self):
+        return self.__streams_data.keys()
+
+    def values(self):
+        return self.__streams_data.values()
+
+    # def __valid_packet(self, pkt: BasePacket):
+    #     pkt_s_data = self[pkt.sid]
+    #     if pkt_s_data is not None:
+    #         pkt = pkt_s_data.stream.get_by_id(pkt.id)
+    #     else:
+    #         pkt = None
+    #     return pkt is not None
+
+    def get_next_hop(self,
+                     pkt: BasePacket,
+                     current_node):
+        # if not self.__valid_packet(pkt):
+        #     raise Exception(f'Пакет {pkt.sid}.{pkt.pid} не принадлежит ни одному потоку, содержащемуся в оперативной памяти')
+
+        if pkt.protocol == 'TCP' and pkt.is_answer:
+            packet_path = self[pkt.sid].reverse_path
+        elif pkt.protocol == 'TCP' and not pkt.is_answer:
+            packet_path = self[pkt.sid].path
+        else:
+            packet_path = self[pkt.sid].packets_paths[pkt.id]
+
+        if current_node.id not in packet_path:
+            raise Exception(f'Вершины {current_node.id} нет в пути пакета {pkt.sid_pid}')
+        else:
+
+            current_node_i = None
+            __i = 0
+            while current_node_i == None and __i < len(packet_path):
+                if packet_path[__i] == current_node.id:
+                    current_node_i = __i
+                else:
+                    __i += 1
+
+            next_node_i = current_node_i + 1
+            if next_node_i < len(packet_path):
+                return packet_path[next_node_i]
+            else:
+                return None
+
+    def get_receiver(self,
+                     pkt: BasePacket):
+        # if not self.__valid_packet(pkt):
+        #     raise Exception(f'Пакет {pkt.sid}.{pkt.pid} не принадлежит ни одному потоку, содержащемуся в оперативной памяти')
+        # else:
+        if pkt.protocol == 'TCP' and pkt.is_answer:
+            packet_path = self[pkt.sid].reverse_path
+        elif pkt.protocol == 'TCP' and not pkt.is_answer:
+            packet_path = self[pkt.sid].path
+        else:
+            packet_path = self[pkt.sid].packets_paths[pkt.id]
+        return packet_path[-1]
+
+    def get_travel_time(self,
+                        pkt: BasePacket):
+        # if not self.__valid_packet(pkt):
+        #     raise Exception(f'Пакет {pkt.sid}.{pkt.pid} не принадлежит ни одному потоку, содержащемуся в оперативной памяти')
+        # else:
+        return self[pkt.sid].packets_time.get(pkt.id, None)
+
+    def increment_travel_time(self,
+                              pkt: BasePacket,
+                              pkt_order: int,
+                              current_node):
+        # if not self.__valid_packet(pkt):
+        #     print(f'Пакет {pkt.sid}.{pkt.pid} не принадлежит ни одному потоку, содержащемуся в оперативной памяти')
+        # else:
+        overall_processing_speed = current_node.processing_speed * (1 + current_node.jitter_f()) * current_node.filled_space_factor
+        self[pkt.sid].packets_time[pkt.id] += (pkt.size / overall_processing_speed) * (pkt_order + 1)
+
+    @staticmethod
+    def create_data_distortion(pkt: BasePacket,
+                               current_node):
+
+        if random.randint(0, 100) < current_node.distortion_probability:
+            pkt.data = adds.information_distortion(pkt.data, dist_level=current_node.distortion_level)
+
+    def flush(self):
+        self.__streams_data = {}
+
+
+class BaseReportAnalyzer:
+    def __init__(self, report):
+        self.report = report
+
+    def _get_optimal_tb_nodes_ids(self):
+        overfilled_nodes_stats = self.report.general_info['overfilled_nodes_stats']
+        r = []
+        for node_id, node_stat in overfilled_nodes_stats.items():
+            if node_stat > 0:
+                r.append(node_id)
+        return r
+
+    def simple_analysis(self):
+        opt_nodes = self._get_optimal_tb_nodes_ids()
+        opt_nodes_stats = {}
+        for node in opt_nodes:
+            node_stats = {
+                'drop_threshold': BASIC_DROP_THRESHOLD
+            }
+            opt_nodes_stats.update({node: node_stats})
+
+        return opt_nodes_stats
+
+    def get_efforts_quality(self, base_report, report):
         ...
+
+
+
+
 

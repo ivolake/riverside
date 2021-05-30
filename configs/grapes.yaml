@@ -1,0 +1,125 @@
+graph:
+  path: C:\Users\bzakh\OneDrive\Documents\Python_Scripts\Networks_Science_2\Graph_Templates\wdigraph6.txt
+  # ^ Указывается адрес на файл с матрицей смежности файла (txt, csv)
+  type: telnet
+   # ^ Тип графа.
+   # Возможные значения: standard, vmrk, mnrk, telnet,
+   # vmrk_telnet, mnrk_telnet
+  protocol: TCP
+   # ^ Тип передачи данных по Сети.
+   # Возможные значения: TCP, UDP
+  options:
+  # ^ Дополнительные настройки
+    inc_nodes: [1, 2, 6, 7, 8, 10, 11, 12, 15]
+    # ^ Список вершин, повышающих счетчик (актуально для vmrk и mnrk графов)
+    dec_nodes: [3, 4, 5, 9, 13, 14, 18]
+    # ^ Список вершин, понижающих счетчик (актуально для mnrk графов)
+    TN_options:
+      TCP_attempts_limit: 5
+      # ^ максимальное количество попыток отправки пакета (актуально только для протокола TCP)
+      TCP_timeout: 100
+      # ^ Максимальное время ожидания пакетом ответа в секундах (актуально только для протокола TCP)
+      nodes_params:
+      # Параметры узлов (актуально только для телекоммуникационных сетей, то есть в type должно быть значение, содержащее слово telnet)
+        "1":
+        # ID узла (имя узла)
+          capacity: 7645
+          # ^ Емкость узла в байтах. При отсуствии данного параметра производится выбор случайного значения из отрезка [1000, 10000]
+          processing_speed: 150
+          # ^ Скорость обработки информации на узле в байтах. При отсуствии данного параметра производится выбор случайного значения из отрезка [100, 1000]
+          distortion_probability: 30
+          # ^ Вероятность искажения данных пакета при обработке на узле. При отсуствии данного параметра производится выбор случайного значения из отрезка [0, 100]
+          distortion_level: 2
+          # ^ Максимальное количество символов, которое может быть искажено. При отсуствии данного параметра производится выбор случайного значения из отрезка [0, 5]
+          settings:
+          # ^ Дополнительные настройки параметров узла
+            jitter:
+              # ^ Настройки функции джиттера скорости обработки пакетов на вершине. Значение джиттера выбирается случайным
+              #   образом из отрезка, границы которого тоже выбираются случайно из двух других отрезков, границы которых
+              #   указываются в этих настройках. При отутствии данных настроек параметры задаются по умолчанию как [-0.09, 0.02, 0.02, 0.09]
+              lowest_low: -0.067
+              # ^ Нижняя граница для генерации нижней границы джиттера
+              highest_low: -0.043
+              # ^ Верхняя граница для генерации нижней границы джиттера
+              lowest_high: 0.019
+              # ^ Нижняя граница для генерации верхней границы джиттера
+              highest_high: 0.055
+              # ^ Верхняя граница для генерации верхней границы джиттера
+            filled_space_factor:
+              # ^ Настройки нагрузочного коэффициента, понижающего скорость обработки информации на узле. По умолчанию [0.75, 1, 0.05]
+              low: 0.65
+              # ^ При 100% заполненности емкости скорость узла будет умножаться на это значение
+              high: 1
+              # ^ При пустой емкости узла его скорость будет умножаться на это значение
+              plateau: 0.08
+              # ^ При сильной перегрузке узла его скорость будет умножаться на это значение
+        "2":
+          capacity: 7059
+          processing_speed: 965
+          distortion_probability: 2
+          distortion_level: 2
+        "3":
+          capacity: 4648
+          processing_speed: 690
+          distortion_probability: 48
+          distortion_level: 2
+        "4":
+          capacity: 6304
+          processing_speed: 245
+          distortion_probability: 96
+          distortion_level: 4
+        "5":
+          capacity: 6589
+          processing_speed: 920
+          distortion_probability: 98
+          distortion_level: 5
+        "6":
+          capacity: 4837
+          processing_speed: 494
+          distortion_probability: 79
+          distortion_level: 4
+        "7":
+          capacity: 9706
+          processing_speed: 450
+          distortion_probability: 8
+          distortion_level: 0
+        "8":
+          capacity: 6657
+          processing_speed: 556
+          distortion_probability: 38
+          distortion_level: 3
+        "9":
+          capacity: 8977
+          processing_speed: 875
+          distortion_probability: 45
+          distortion_level: 3
+        "10":
+          capacity: 1460
+          processing_speed: 792
+          distortion_probability: 42
+          distortion_level: 0
+        "11":
+          capacity: 8086
+          processing_speed: 603
+          distortion_probability: 9
+          distortion_level: 4
+        "12":
+          capacity: 5047
+          processing_speed: 727
+          distortion_probability: 84
+          distortion_level: 0
+        "13":
+          capacity: 4488
+          processing_speed: 243
+          distortion_probability: 75
+          distortion_level: 4
+        "14":
+          capacity: 9248
+          processing_speed: 941
+          distortion_probability: 17
+          distortion_level: 0
+        "15":
+          capacity: 6721
+          processing_speed: 160
+          distortion_probability: 34
+          distortion_level: 4
