@@ -164,6 +164,24 @@ class BaseGraph:
                               **kwargs) -> None:
         self.drawer.draw_graph_with_paths(paths=paths, file_name=file_name, ipos=ipos, show=show, **kwargs)
 
+    def draw_graph_with_tb_nodes(self,
+                              tb_params: dict,
+                              file_name: str = None,
+                              ipos: int = 1,
+                              show: bool = True,
+                              **kwargs) -> None:
+        self.drawer.draw_graph_with_tb_nodes(tb_params=tb_params, file_name=file_name, ipos=ipos, show=show, **kwargs)
+
+    def draw_graph_with_tb_nodes_and_paths(self,
+                              paths: PathCollection,
+                              tb_params: dict,
+                              file_name: str = None,
+                              ipos: int = 1,
+                              show: bool = True,
+                              **kwargs) -> None:
+        self.drawer.draw_graph_with_tb_nodes_and_paths(paths=paths, tb_params=tb_params, file_name=file_name, ipos=ipos, show=show, **kwargs)
+
+
 class VMRkGraph(BaseGraph):
 
     def __init__(self, config):

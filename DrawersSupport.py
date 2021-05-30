@@ -34,8 +34,8 @@ class BaseDrawerConfig():
     weights_label_pos: float = 0.4  # или (0.5 * random.ranf() + 0.25)
     weights_font_size: int = 15
 
-    node_shape: str = 's'
-    node_size: int = 850
+    node_shape_default: str = 's'
+    node_size_default: int = 850
     node_font_size: int = 18
     node_neutral_color: str = '#949494'
     node_borders_width: float = 1.5
@@ -48,6 +48,10 @@ class BaseDrawerConfig():
 
     first_path_hex_color: str = '0x08e822'
     path_edges_width: float = 6
+
+
+    node_shape_tb: str = 'D'
+    node_size_tb: int = 1000
 
 ############
 # PARAMS

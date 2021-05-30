@@ -14,12 +14,15 @@ from config import OUTPUT_PATH
 from additions import generate_separate_graph_and_weights, generate_pos, generate_path_edges
 
 
-class BaseDrawer():
+class BaseDrawer:
     def __init__(self, graph: 'Graphs.BaseGraph'):
     # def __init__(self, graph):
         self.graph = graph
 
         self.drawer_config = BaseDrawerConfig()
+
+        self._paths = None
+        self._tb_params = None
 
 
     @property
@@ -32,6 +35,10 @@ class BaseDrawer():
             return int(13 * self.nodes_count / 9), int(7 * self.nodes_count / 9)
         else:
             return int(13 * self.nodes_count / 11), int(7 * self.nodes_count / 11)
+
+    @property
+    def _nodes_colors(self):
+        return nx.get_node_attributes(self.G, 'color')
 
     @property
     def _edges_colors(self):
@@ -51,14 +58,18 @@ class BaseDrawer():
 
 
 
-    def initial_configuring(self, paths: PathCollection = None, **kwargs):
+    def initial_configuring(self,
+                            paths: PathCollection = None,
+                            tb_params: dict = None,
+                            **kwargs):
         """
 
         Parameters
         ----------
         paths - пути для вывода
-        n - вывести n первых путей. Применяется после перемешивания, если оно есть
-        permutate_paths - перемешать пути
+        tb_params - словарь с ключами из наименований узлов-ведер
+        **kwargs
+         k - порядок путей на графе
 
         Returns
         -------
@@ -66,12 +77,13 @@ class BaseDrawer():
         """
 
         self._paths = paths
+        self._tb_params = tb_params
 
         if 'k' in kwargs.keys():
             self._k = kwargs['k']
 
         if self.graph.weighted:
-            (self.raw_graph, self.edges_labels) = generate_separate_graph_and_weights(self.graph.struct)  # превращаю взвешенный граф в
+            (self.raw_graph, self.edges_labels) = generate_separate_graph_and_weights(self.graph.struct)  # превращаю взвешенный граф в невзвешенный
         else:
             (self.raw_graph, self.edges_labels) = self.graph.struct, None
         # читабельный для программы вид
@@ -168,11 +180,30 @@ class BaseDrawer():
         for spine in self.ax.spines:
             self.ax.spines[spine].set_visible(False)
 
-        nx.draw_networkx_nodes(
-            G=self.G, pos=self.pos, nodelist=self.nodes, node_size=self.drawer_config.node_size,
-            node_color=self.nodes_colors, node_shape=self.drawer_config.node_shape,
-            linewidths=self.drawer_config.node_borders_width, edgecolors=self.drawer_config.node_borders_color,
-            ax=self.ax, alpha=1, cmap=None, vmin=None, vmax=None, label=None)
+        if self._tb_params:
+            base_nodes = list(set(self.nodes) - set(self._tb_params.keys()))
+            base_nodes_colors = [self._nodes_colors[nid] for nid in base_nodes]
+
+            tb_nodes = list(self._tb_params.keys())
+            tb_nodes_colors = [self._nodes_colors[nid] for nid in tb_nodes]
+
+            nx.draw_networkx_nodes(
+                G=self.G, pos=self.pos, nodelist=base_nodes, node_size=self.drawer_config.node_size_default,
+                node_color=base_nodes_colors, node_shape=self.drawer_config.node_shape_default,
+                linewidths=self.drawer_config.node_borders_width, edgecolors=self.drawer_config.node_borders_color,
+                ax=self.ax, alpha=1, cmap=None, vmin=None, vmax=None, label=None)
+
+            nx.draw_networkx_nodes(
+                G=self.G, pos=self.pos, nodelist=tb_nodes, node_size=self.drawer_config.node_size_tb,
+                node_color=tb_nodes_colors, node_shape=self.drawer_config.node_shape_tb,
+                linewidths=self.drawer_config.node_borders_width, edgecolors=self.drawer_config.node_borders_color,
+                ax=self.ax, alpha=1, cmap=None, vmin=None, vmax=None, label=None)
+        else:
+            nx.draw_networkx_nodes(
+                G=self.G, pos=self.pos, nodelist=self.nodes, node_size=self.drawer_config.node_size_default,
+                node_color=self.nodes_colors, node_shape=self.drawer_config.node_shape_default,
+                linewidths=self.drawer_config.node_borders_width, edgecolors=self.drawer_config.node_borders_color,
+                ax=self.ax, alpha=1, cmap=None, vmin=None, vmax=None, label=None)
 
         if self._paths:
 
@@ -283,6 +314,66 @@ class BaseDrawer():
 
         # создаю координаты вершин графа
         self.set_pos(ipos=ipos)
+
+        # рисование
+        self._draw()
+
+        self.save_or_show(file_name, show)
+
+
+    def draw_graph_with_tb_nodes(self,
+                              tb_params: dict,
+                              file_name: str = None,
+                              ipos: int = 1,
+                              show: bool = True,
+                              **kwargs):
+        """
+        Рисует граф без путей, сохраняя граф в директорию /output
+        """
+        # ---------------------DRAWING---------------------
+
+        # Определение переменной графа в терминах networkx и прочее
+        self.initial_configuring(tb_params=tb_params, **kwargs)
+
+        # в этом сегменте я задаю всем вершинам цвета,и некоторым в частности. Создаю списки с вершинами и их цветами
+        self.set_colors_to_nodes()
+
+        # в этом сегменте я задаю всем ребрам цвета,и некоторым в частности. Создаю списки с ребрами и их цветами
+        self.set_colors_to_edges()
+
+        # создаю координаты вершин графа
+        self.set_pos(ipos)
+
+        # рисование
+        self._draw()
+
+        self.save_or_show(file_name, show)
+
+
+    def draw_graph_with_tb_nodes_and_paths(self,
+                                          paths: PathCollection,
+                                          tb_params: dict,
+                                          file_name: str = None,
+                                          ipos: int = 1,
+                                          show: bool = True,
+                                          **kwargs):
+        """
+            Рисует граф, сохраняя граф в директорию /output
+        """
+        # ---------------------DRAWING---------------------
+        self.initial_configuring(paths=paths, tb_params=tb_params, **kwargs)
+
+        self.add_text_box()
+
+        # в этом сегменте я задаю всем вершинам цвета,и некоторым в частности. Создаю списки с вершинами и их цветами
+        self.set_colors_to_nodes()
+
+        # в этом сегменте я задаю всем ребрам цвета,и некоторым в частности. Создаю списки с ребрами и их цветами
+        self.set_colors_to_edges()
+
+        # создаю координаты вершин графа
+        self.set_pos(ipos=ipos)
+
         # рисование
         self._draw()
 
