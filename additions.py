@@ -1,4 +1,5 @@
 import json
+import math
 import random
 import string
 from collections import Iterable
@@ -181,6 +182,9 @@ def get_edges(graph: dict, weighted: bool):
 
 
 def damerau_levenshtein_distance(s1, s2):
+    """
+    Смысл: сколько операций добавления, удаления, перестановки или подстановки символов нужно совершить, чтобы строки стали равны
+    """
     d = {}
     lenstr1 = len(s1)
     lenstr2 = len(s2)
@@ -203,6 +207,17 @@ def damerau_levenshtein_distance(s1, s2):
             if i and j and s1[i] == s2[j - 1] and s1[i - 1] == s2[j]:
                 d[(i, j)] = min(d[(i, j)], d[i - 2, j - 2] + cost)  # transposition
     return d[lenstr1 - 1, lenstr2 - 1]
+
+def huffman_distance(s1, s2):
+    """
+    Смысл: сколько операций добавления или удаления символа нужно совершить, чтобы строки стали равны
+    """
+    s1, s2 = sorted((s1, s2), key=len)
+    d = 0
+    for i in range(0, len(s1)):
+        if s1[i] != s2[i]:
+            d += 1
+    return d
 
 
 def ID_random_insertion(info):
@@ -254,8 +269,72 @@ def ID_random_substitution(info):
 
 def information_distortion(info: str, dist_level: int = 1):
     distorted = info
-    for i in range(0, dist_level):
+    for i in range(0, random.randint(0, dist_level)):
         distorted = random.choice([ID_random_insertion,
                                    ID_random_deletion,
                                    ID_random_substitution])(distorted)
     return distorted
+
+def get_vals_from_inherited_keys(d, key):
+    """
+    Parameters
+    ----------
+    d - dict
+    keys - keys in format "key" or "key1.key2"
+
+    Returns
+    -------
+    values
+    """
+
+    value = ''
+    key_list = key.split('.')
+    inner_d = d
+    if len(key_list) > 1:
+        for i in range(0, len(key_list) - 1):
+            inner_d = inner_d[key_list[i]]
+            if isinstance(inner_d, list):
+                value = int(inner_d[key_list[i + 1]])
+            elif isinstance(inner_d, dict):
+                value = inner_d[key_list[i + 1]]
+            else:
+                value = inner_d
+    else:
+        value = inner_d[key_list[0]]
+
+    return value
+
+def set_vals_from_inherited_keys(d, key, value):
+    """
+    Parameters
+    ----------
+    d - dict
+    keys - keys in format "key" or "key1.key2"
+    value - value to set
+
+    Returns
+    -------
+    values
+    """
+    new_d = d
+    key_list = key.split('.')
+    attrs = '"]["'.join(key_list)
+    exec('new_d["%s"] = %s' % (attrs, value))
+    return new_d
+
+def filled_space_factor_formulae(n: float,
+                                 params: dict):
+    filled_space_factor_low = params['filled_space_factor_low']
+    filled_space_factor_high = params['filled_space_factor_high']
+    filled_space_factor_plateau = params['filled_space_factor_plateau']
+    """
+    Функция расчета коэффициента замедления работы узла 
+    вследствие его нагрузки
+    """
+
+    if n == 0:
+        factor = 1
+    else:
+        factor = 1 - math.exp(n - 1 / n) * (filled_space_factor_high - filled_space_factor_low)
+        factor = factor if factor > filled_space_factor_plateau else filled_space_factor_plateau
+    return round(factor, 4)

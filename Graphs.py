@@ -14,9 +14,9 @@ class BaseGraph:
         self.type = config.get('type')
         self._graph_path = self.config.get('path')
 
-        self._edges = None
-        self._nodes = None
-        self._struct, self._weighted = self._extract_graph(self._graph_path, self.type)
+        self.__edges = None
+        self.__nodes = None
+        self.__struct, self.__weighted = self._extract_graph(self._graph_path, self.type)
 
 
     def __repr__(self):
@@ -24,16 +24,24 @@ class BaseGraph:
 
     @property
     def struct(self):
-        return self._struct
+        return self.__struct
     
     @struct.setter
     def struct(self, value):
-        self._struct = value
+        self.__struct = value
 
     @property
     def edges(self):
-        self._edges = adds.get_edges(self._struct, self._weighted)
-        return self._edges
+        """
+        Если не взвешенный граф, то это список вида list[v_i, v_j].
+        Если взвешенный граф, то это словарь вида dict[(v_i, v_j): w].
+        Здесь v_i, v_j - названия вершин.
+        Returns
+        -------
+        list or dict
+        """
+        self.__edges = adds.get_edges(self.__struct, self.__weighted)
+        return self.__edges
 
     # @edges.setter
     # def edges(self, edges):
@@ -41,8 +49,8 @@ class BaseGraph:
 
     @property
     def nodes(self):
-        self._nodes = list(self._struct.keys())
-        return self._nodes
+        self.__nodes = list(self.__struct.keys())
+        return self.__nodes
 
     # @nodes.setter
     # def nodes(self, nodes):
@@ -57,11 +65,11 @@ class BaseGraph:
         # else:
         #     self._weighted = None
         #     print(f'Тип графа неизвестен: {self.type}')
-        return self._weighted
+        return self.__weighted
 
-    @weighted.setter
-    def weighted(self, value):
-        self._weighted = value
+    # @weighted.setter
+    # def weighted(self, value):
+    #     self.__weighted = value
 
     @property
     def drawer(self):

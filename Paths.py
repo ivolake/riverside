@@ -79,6 +79,12 @@ class Path(List):
     def append(self, value: str) -> None:
         self.path.append(value)
 
+    def index(self, __value, __start: int = ..., __stop: int = ...) -> int:
+        return self.path.index(__value, __start, __stop)
+
+    # def reverse(self):
+    #     self.path = list(reversed(self.path))
+
 
 class TNPath(Path):
     def __init__(self, path: List, time: float):
@@ -203,6 +209,9 @@ class PathCollection(List):
     def get_slowest(self) -> TNPath:
         raise NotImplementedError
 
+    def sort_by_time(self) -> None:
+        raise NotImplementedError
+
 
     def get_path_of_smallest_magnitude(self) -> TNMPath:
         raise NotImplementedError
@@ -210,10 +219,10 @@ class PathCollection(List):
     def get_path_of_biggest_magnitude(self) -> TNMPath:
         raise NotImplementedError
 
-    def get_magnitudes_counts(self):
+    def get_magnitudes_counts(self) -> FineDict:
         raise NotImplementedError
 
-    def get_magnitudes_distribution(self):
+    def get_magnitudes_distribution(self) -> FineDict:
         raise NotImplementedError
 
 
@@ -231,6 +240,15 @@ class TNPathCollection(PathCollection):
     def get_slowest(self) -> TNPath:
         return max(self.paths, key=attrgetter('time'))
 
+    def sort_by_time(self) -> None:
+        """
+        Сортирует пути в порядке возрастания по времени
+        Returns
+        -------
+
+        """
+        self.paths = sorted(self.paths, key=attrgetter('time'))
+
 class MPathCollection(PathCollection):
     def __init__(self, paths: List):
         PathCollection.__init__(self, paths)
@@ -245,7 +263,7 @@ class MPathCollection(PathCollection):
     def get_path_of_biggest_magnitude(self) -> TNMPath:
         return max(self.paths, key=attrgetter('i'))
 
-    def get_magnitudes_counts(self):
+    def get_magnitudes_counts(self) -> FineDict:
         magnitudes_counts = FineDict()
         for path in self.paths:
             if path.i not in magnitudes_counts.keys():
@@ -254,7 +272,7 @@ class MPathCollection(PathCollection):
                 magnitudes_counts[path.i] += 1
         return magnitudes_counts
 
-    def get_magnitudes_distribution(self):
+    def get_magnitudes_distribution(self) -> FineDict:
         N = len(self.paths)
         magnitudes_distribution = FineDict()
         magnitudes_counts = self.get_magnitudes_counts()
