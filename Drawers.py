@@ -322,11 +322,11 @@ class BaseDrawer:
 
 
     def draw_graph_with_tb_nodes(self,
-                              tb_params: dict,
-                              file_name: str = None,
-                              ipos: int = 1,
-                              show: bool = True,
-                              **kwargs):
+                                 tb_params: dict,
+                                 file_name: str = None,
+                                 ipos: int = 1,
+                                 show: bool = True,
+                                 **kwargs):
         """
         Рисует граф без путей, сохраняя граф в директорию /output
         """

@@ -1,0 +1,467 @@
+graph:
+  path: D:\OneDrive\Documents\Python_Scripts\Networks_Science_2\Graph_Templates\wdigraph7.txt
+  # ^ Указывается адрес на файл с матрицей смежности файла (txt, csv)
+  type: mnrk_telnet
+   # ^ Тип графа.
+   # Возможные значения: standard, vmrk, mnrk, telnet,
+   # vmrk_telnet, mnrk_telnet
+  options:
+  # ^ Дополнительные настройки
+    inc_nodes: [1, 2, 6, 7, 8, 12, 15, 18, 23, 24, 29, 30, 33, 40, 51, 52, 59, 66, 68, 70]
+    # ^ Список вершин, повышающих счетчик (актуально для vmrk и mnrk графов)
+    dec_nodes: [3, 4, 5, 9, 13, 14, 19, 25, 37, 38, 42, 46, 54, 69]
+    # ^ Список вершин, понижающих счетчик (актуально для mnrk графов)
+    TN_options:
+      TCP_attempts_limit: 5
+      # ^ максимальное количество попыток отправки пакета (актуально только для протокола TCP)
+      TCP_timeout: 100
+      # ^ Максимальное время ожидания пакетом ответа в секундах (актуально только для протокола TCP)
+      nodes_params:
+      # Параметры узлов (актуально только для телекоммуникационных сетей, то есть в type должно быть значение, содержащее слово telnet)
+        1:
+        # ID узла (имя узла)
+          capacity: 16734515
+          # ^ Емкость узла в байтах. При отсуствии данного параметра производится выбор случайного значения из отрезка [1000, 10000]
+          processing_speed: 12557169
+          # ^ Скорость обработки информации на узле в байтах. При отсуствии данного параметра производится выбор случайного значения из отрезка [100, 1000]
+          distortion_probability: 30
+          # ^ Вероятность искажения данных пакета при обработке на узле. При отсуствии данного параметра производится выбор случайного значения из отрезка [0, 100]
+          distortion_level: 2
+          # ^ Максимальное количество символов, которое может быть искажено. При отсуствии данного параметра производится выбор случайного значения из отрезка [0, 5]
+          settings:
+          # ^ Дополнительные настройки параметров узла
+            jitter:
+              # ^ Настройки функции джиттера скорости обработки пакетов на вершине (в виде множителей скорости от 0 до 1).
+              #   Значение джиттера выбирается случайным образом из отрезка, границы которого тоже выбираются случайно
+              #   из двух других отрезков, границы которых указываются в этих настройках. При отутствии данных настроек
+              #   параметры задаются по умолчанию как [-0.09, 0.02, 0.02, 0.09]
+              lowest_low: 0.007
+              # ^ Нижняя граница для генерации нижней границы джиттера
+              highest_low: 0.023
+              # ^ Верхняя граница для генерации нижней границы джиттера
+              lowest_high: 0.039
+              # ^ Нижняя граница для генерации верхней границы джиттера
+              highest_high: 0.085
+              # ^ Верхняя граница для генерации верхней границы джиттера
+            filled_space_factor:
+              # ^ Настройки нагрузочного коэффициента, понижающего скорость обработки информации на узле. По умолчанию [0.75, 1, 0.05]
+              low: 0.65
+              # ^ При 100% заполненности емкости скорость узла будет умножаться на это значение
+              high: 1
+              # ^ При пустой емкости узла его скорость будет умножаться на это значение
+              plateau: 0.08
+              # ^ При сильной перегрузке узла его скорость будет умножаться на это значение
+
+        2:
+          capacity: 12285197
+          processing_speed: 17120454
+          distortion_probability: 68
+          distortion_level: 1
+
+        3:
+          capacity: 9788344
+          processing_speed: 18468658
+          distortion_probability: 75
+          distortion_level: 0
+
+        4:
+          capacity: 16772515
+          processing_speed: 16207668
+          distortion_probability: 29
+          distortion_level: 4
+
+        5:
+          capacity: 16214790
+          processing_speed: 17215157
+          distortion_probability: 38
+          distortion_level: 0
+
+        6:
+          capacity: 13950474
+          processing_speed: 18265168
+          distortion_probability: 4
+          distortion_level: 4
+
+        7:
+          capacity: 14776944
+          processing_speed: 16839787
+          distortion_probability: 25
+          distortion_level: 2
+
+        8:
+          capacity: 15360653
+          processing_speed: 16839764
+          distortion_probability: 18
+          distortion_level: 4
+
+        9:
+          capacity: 10527773
+          processing_speed: 17187169
+          distortion_probability: 44
+          distortion_level: 1
+
+        10:
+          capacity: 11574092
+          processing_speed: 16799791
+          distortion_probability: 6
+          distortion_level: 0
+
+        11:
+          capacity: 16620587
+          processing_speed: 15854705
+          distortion_probability: 13
+          distortion_level: 0
+
+        12:
+          capacity: 16395789
+          processing_speed: 16662004
+          distortion_probability: 61
+          distortion_level: 0
+
+        13:
+          capacity: 9518637
+          processing_speed: 15796804
+          distortion_probability: 30
+          distortion_level: 3
+
+        14:
+          capacity: 12129955
+          processing_speed: 16379771
+          distortion_probability: 60
+          distortion_level: 1
+
+        15:
+          capacity: 17170023
+          processing_speed: 16677758
+          distortion_probability: 1
+          distortion_level: 1
+
+        16:
+          capacity: 16369149
+          processing_speed: 18202091
+          distortion_probability: 71
+          distortion_level: 1
+
+        17:
+          capacity: 12277266
+          processing_speed: 17536965
+          distortion_probability: 31
+          distortion_level: 5
+
+        18:
+          capacity: 13943767
+          processing_speed: 18284133
+          distortion_probability: 41
+          distortion_level: 1
+
+        19:
+          capacity: 10710138
+          processing_speed: 16169995
+          distortion_probability: 29
+          distortion_level: 5
+
+        20:
+          capacity: 10066052
+          processing_speed: 17681775
+          distortion_probability: 19
+          distortion_level: 5
+
+        21:
+          capacity: 10700463
+          processing_speed: 17394733
+          distortion_probability: 52
+          distortion_level: 2
+
+        22:
+          capacity: 16895777
+          processing_speed: 18692019
+          distortion_probability: 48
+          distortion_level: 2
+
+        23:
+          capacity: 13645810
+          processing_speed: 16505028
+          distortion_probability: 91
+          distortion_level: 0
+
+        24:
+          capacity: 11625235
+          processing_speed: 16122659
+          distortion_probability: 100
+          distortion_level: 1
+
+        25:
+          capacity: 9799208
+          processing_speed: 16732638
+          distortion_probability: 44
+          distortion_level: 0
+
+        26:
+          capacity: 17615458
+          processing_speed: 15826397
+          distortion_probability: 72
+          distortion_level: 0
+
+        27:
+          capacity: 14791265
+          processing_speed: 17775636
+          distortion_probability: 18
+          distortion_level: 2
+
+        28:
+          capacity: 12214616
+          processing_speed: 16616774
+          distortion_probability: 89
+          distortion_level: 1
+
+        29:
+          capacity: 9388472
+          processing_speed: 18358119
+          distortion_probability: 34
+          distortion_level: 1
+
+        30:
+          capacity: 9848289
+          processing_speed: 17965674
+          distortion_probability: 39
+          distortion_level: 5
+
+        31:
+          capacity: 17562859
+          processing_speed: 16721132
+          distortion_probability: 41
+          distortion_level: 2
+
+        32:
+          capacity: 18359226
+          processing_speed: 17112901
+          distortion_probability: 2
+          distortion_level: 2
+
+        33:
+          capacity: 14518801
+          processing_speed: 17581200
+          distortion_probability: 0
+          distortion_level: 4
+
+        34:
+          capacity: 18446969
+          processing_speed: 16810543
+          distortion_probability: 3
+          distortion_level: 2
+
+        35:
+          capacity: 16399562
+          processing_speed: 18045150
+          distortion_probability: 33
+          distortion_level: 0
+
+        36:
+          capacity: 18540862
+          processing_speed: 16157323
+          distortion_probability: 27
+          distortion_level: 0
+
+        37:
+          capacity: 9751479
+          processing_speed: 18687200
+          distortion_probability: 81
+          distortion_level: 3
+
+        38:
+          capacity: 13079615
+          processing_speed: 16310760
+          distortion_probability: 29
+          distortion_level: 5
+
+        39:
+          capacity: 11556873
+          processing_speed: 16483922
+          distortion_probability: 34
+          distortion_level: 3
+
+        40:
+          capacity: 10541587
+          processing_speed: 16212764
+          distortion_probability: 76
+          distortion_level: 5
+
+        41:
+          capacity: 11903306
+          processing_speed: 16530380
+          distortion_probability: 25
+          distortion_level: 5
+
+        42:
+          capacity: 9552583
+          processing_speed: 17085502
+          distortion_probability: 44
+          distortion_level: 1
+
+        43:
+          capacity: 10181264
+          processing_speed: 17820781
+          distortion_probability: 71
+          distortion_level: 2
+
+        44:
+          capacity: 13618183
+          processing_speed: 17455345
+          distortion_probability: 28
+          distortion_level: 3
+
+        45:
+          capacity: 11081693
+          processing_speed: 16387197
+          distortion_probability: 21
+          distortion_level: 2
+
+        46:
+          capacity: 14502120
+          processing_speed: 18351048
+          distortion_probability: 54
+          distortion_level: 1
+
+        47:
+          capacity: 16474427
+          processing_speed: 18634116
+          distortion_probability: 96
+          distortion_level: 3
+
+        48:
+          capacity: 14070343
+          processing_speed: 16140781
+          distortion_probability: 77
+          distortion_level: 0
+
+        49:
+          capacity: 12146469
+          processing_speed: 16389831
+          distortion_probability: 12
+          distortion_level: 1
+
+        50:
+          capacity: 18674168
+          processing_speed: 18614150
+          distortion_probability: 64
+          distortion_level: 2
+
+        51:
+          capacity: 10458354
+          processing_speed: 15798720
+          distortion_probability: 71
+          distortion_level: 4
+
+        52:
+          capacity: 14368894
+          processing_speed: 17394297
+          distortion_probability: 92
+          distortion_level: 4
+
+        53:
+          capacity: 14993857
+          processing_speed: 16204241
+          distortion_probability: 62
+          distortion_level: 5
+
+        54:
+          capacity: 15137203
+          processing_speed: 15925746
+          distortion_probability: 37
+          distortion_level: 1
+
+        55:
+          capacity: 14945581
+          processing_speed: 18321799
+          distortion_probability: 5
+          distortion_level: 2
+
+        56:
+          capacity: 15643566
+          processing_speed: 18474458
+          distortion_probability: 41
+          distortion_level: 1
+
+        57:
+          capacity: 12639404
+          processing_speed: 15625227
+          distortion_probability: 26
+          distortion_level: 1
+
+        58:
+          capacity: 17655457
+          processing_speed: 16160684
+          distortion_probability: 71
+          distortion_level: 0
+
+        59:
+          capacity: 12383951
+          processing_speed: 16393635
+          distortion_probability: 87
+          distortion_level: 0
+
+        60:
+          capacity: 16922358
+          processing_speed: 17773602
+          distortion_probability: 75
+          distortion_level: 5
+
+        61:
+          capacity: 17753307
+          processing_speed: 15832846
+          distortion_probability: 27
+          distortion_level: 3
+
+        62:
+          capacity: 11380623
+          processing_speed: 17688393
+          distortion_probability: 5
+          distortion_level: 5
+
+        63:
+          capacity: 18081433
+          processing_speed: 18656103
+          distortion_probability: 33
+          distortion_level: 2
+
+        64:
+          capacity: 10208476
+          processing_speed: 16852401
+          distortion_probability: 65
+          distortion_level: 2
+
+        65:
+          capacity: 14958496
+          processing_speed: 17020105
+          distortion_probability: 72
+          distortion_level: 5
+
+        66:
+          capacity: 18534586
+          processing_speed: 15722453
+          distortion_probability: 2
+          distortion_level: 1
+
+        67:
+          capacity: 16534785
+          processing_speed: 18249203
+          distortion_probability: 4
+          distortion_level: 1
+
+        68:
+          capacity: 17308148
+          processing_speed: 16089205
+          distortion_probability: 70
+          distortion_level: 3
+
+        69:
+          capacity: 9986920
+          processing_speed: 17233463
+          distortion_probability: 93
+          distortion_level: 4
+
+        70:
+          capacity: 18162644
+          processing_speed: 18381644
+          distortion_probability: 67
+          distortion_level: 4

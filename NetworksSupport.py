@@ -1,6 +1,8 @@
 import random
+from collections import OrderedDict
 from itertools import chain, compress
 from typing import List
+import operator as op
 
 # from Nodes import BaseNode
 # from NetworksReports import MaintenanceReport
@@ -261,7 +263,7 @@ class BaseReportAnalyzer:
     def __init__(self, report):
         self.report = report
 
-    def _get_optimal_tb_nodes_ids(self):
+    def _get_overfilled_nodes_ids(self):
         overfilled_nodes_stats = self.report.general_info['overfilled_nodes_stats']
         r = []
         for node_id, node_stat in overfilled_nodes_stats.items():
@@ -269,8 +271,37 @@ class BaseReportAnalyzer:
                 r.append(node_id)
         return r
 
-    def simple_analysis(self):
-        opt_nodes = self._get_optimal_tb_nodes_ids()
+    def _get_sorted_filled_nodes_ids(self):
+        filled_nodes_stats = []
+        for n in self.report.keys():
+            filled_nodes_stats.append((n, self.report[n]['metrics']['filled_space_relative']['max']))
+        r = OrderedDict()
+        for node_id, node_stat in sorted(filled_nodes_stats, key=op.itemgetter(1), reverse=True):
+                r.update({node_id: node_stat})
+        return r
+
+    def simple_analysis_single_node(self):
+        opt_nodes = self._get_overfilled_nodes_ids()
+        opt_nodes_stats = {}
+        for node in opt_nodes:
+            node_stats = {
+                'drop_threshold': BASIC_DROP_THRESHOLD
+            }
+            opt_nodes_stats.update({node: node_stats})
+
+        return opt_nodes_stats
+
+    def simple_analysis_few_nodes(self, n: int):
+        """
+        Parameters
+        ----------
+        n - количество узлов для введения ведра
+
+        Returns
+        -------
+
+        """
+        opt_nodes = list(self._get_sorted_filled_nodes_ids().keys())[:n]
         opt_nodes_stats = {}
         for node in opt_nodes:
             node_stats = {

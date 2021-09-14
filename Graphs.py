@@ -110,9 +110,9 @@ class BaseGraph:
             lines = f.readlines()
             f.close()
         matrix = []
-        nodes = eval('[' + lines[0][2:-1] + ']')
+        nodes = eval('[' + lines[0][1:-1] + ']')
         for line in lines[1:]:
-            matrix.append(eval('[' + line[1:][2:-1] + ']'))
+            matrix.append(eval('[' + line[line.index(',')+1:] + ']'))
         g = dict()
         weighted = False
         for i in range(0, len(matrix)):
@@ -165,20 +165,20 @@ class BaseGraph:
         self.drawer.draw_graph_with_paths(paths=paths, file_name=file_name, ipos=ipos, show=show, **kwargs)
 
     def draw_graph_with_tb_nodes(self,
-                              tb_params: dict,
-                              file_name: str = None,
-                              ipos: int = 1,
-                              show: bool = True,
-                              **kwargs) -> None:
+                                 tb_params: dict,
+                                 file_name: str = None,
+                                 ipos: int = 1,
+                                 show: bool = True,
+                                 **kwargs) -> None:
         self.drawer.draw_graph_with_tb_nodes(tb_params=tb_params, file_name=file_name, ipos=ipos, show=show, **kwargs)
 
     def draw_graph_with_tb_nodes_and_paths(self,
-                              paths: PathCollection,
-                              tb_params: dict,
-                              file_name: str = None,
-                              ipos: int = 1,
-                              show: bool = True,
-                              **kwargs) -> None:
+                                           paths: PathCollection,
+                                           tb_params: dict,
+                                           file_name: str = None,
+                                           ipos: int = 1,
+                                           show: bool = True,
+                                           **kwargs) -> None:
         self.drawer.draw_graph_with_tb_nodes_and_paths(paths=paths, tb_params=tb_params, file_name=file_name, ipos=ipos, show=show, **kwargs)
 
 

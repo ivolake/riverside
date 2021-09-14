@@ -1,5 +1,6 @@
 import argparse
-import sys, os
+import sys
+import os
 import ruamel.yaml
 from Graphs import BaseGraph, VMRkGraph, MNRkGraph, BaseTelNet, VMRkTelNet, MNRkTelNet
 
@@ -38,23 +39,6 @@ def get_graph(config: dict) -> BaseGraph:
         return MNRkTelNet(config)
     else:
         raise Exception('В конфигурационном файле объявлен неверный тип графа.')
-
-def create_config():
-    # TODO:
-    #  Реализовать эту функцию
-    """
-    Функция, которая будет создавать конфигурационный файл по вводу пользователя
-    :return:
-    """
-    ...
-def create_traffic():
-    # TODO:
-    #  Реализовать эту функцию
-    """
-    Функция, которая будет создавать файл трафика по вводу пользователя
-    :return:
-    """
-    ...
 
 def get_yaml(path):
     with open(os.path.abspath(path), 'r', encoding='utf-8') as f:
@@ -102,7 +86,7 @@ if __name__ == '__main__':
 
 
     A = BaseReportAnalyzer(base_maintenance_report)
-    tb_params = A.simple_analysis()
+    tb_params = A.simple_analysis_few_nodes(n=2)
 
 
     TBN = TBNetwork(graph=graph, tb_params=tb_params)
@@ -121,6 +105,12 @@ if __name__ == '__main__':
     maintenance_report.prepare()
     maintenance_report.prepare_total()
     maintenance_report.prepare_general_info()
+
+    os.mkdir('D:\OneDrive\Documents\Научная работа\Научная работа лето 3-4 курс 2020 и зима 4 курс 2020-2021\\Тесты\\Тест2')
+    base_traffic_report.save_to_txt('D:\OneDrive\Documents\Научная работа\Научная работа лето 3-4 курс 2020 и зима 4 курс 2020-2021\\Тесты\\Тест2\\base_traffic_report_test2.txt')
+    base_maintenance_report.save_to_txt('D:\OneDrive\Documents\Научная работа\Научная работа лето 3-4 курс 2020 и зима 4 курс 2020-2021\\Тесты\\Тест2\\base_maintenance_report_test2.txt')
+    traffic_report.save_to_txt('D:\OneDrive\Documents\Научная работа\Научная работа лето 3-4 курс 2020 и зима 4 курс 2020-2021\\Тесты\\Тест2\\traffic_report_test2.txt')
+    maintenance_report.save_to_txt('D:\OneDrive\Documents\Научная работа\Научная работа лето 3-4 курс 2020 и зима 4 курс 2020-2021\\Тесты\\Тест2\\maintenance_report_test2.txt')
 
     1+1
     # quality_report = A.get_efforts_quality(base_traffic_report, traffic_report)
