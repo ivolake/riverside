@@ -1,4 +1,5 @@
 import json
+import os
 from itertools import compress
 
 from NetworksSupport import Traffic
@@ -8,11 +9,11 @@ class BaseReport:
     def __init__(self):
         pass
 
-    def __getitem__(self, key):
-        return NotImplemented
-
-    def __setitem__(self, key, value):
-        return NotImplemented
+    # def __getitem__(self, key):
+    #     return NotImplemented
+    #
+    # def __setitem__(self, key, value):
+    #     return NotImplemented
 
     def __len__(self):
         return NotImplemented
@@ -43,6 +44,9 @@ class BaseReport:
         return NotImplemented
 
     def convert_to_excel(self):
+        return NotImplemented
+
+    def save_to_txt(self, file_path: str):
         return NotImplemented
 
 
@@ -81,10 +85,12 @@ class TrafficReport(BaseReport):
         self.__reports = dict(zip(ids, reports))
 
     def __getitem__(self, key):
-        return adds.get_vals_from_inherited_keys(self.__reports, key)
+        # return adds.get_vals_from_inherited_keys(self.__reports, key)
+        return self.__reports[key]
 
     def __setitem__(self, key, value):
-        adds.set_vals_from_inherited_keys(self.__reports, key, value)
+        # adds.set_vals_from_inherited_keys(self.__reports, key, value)
+        self.__reports[key] = value
 
     def __len__(self):
         return len(self.__reports)
@@ -193,6 +199,14 @@ class TrafficReport(BaseReport):
 
     def convert_to_excel(self):
         return NotImplemented
+
+    def save_to_txt(self, file_path: str):
+        with open(os.path.abspath(file_path), 'w', encoding='utf-8') as f:
+            _ = dict(self.__reports, **self.__reports)
+            for i in _:
+                _[i].pop('received_packets')
+            s = json.dumps(_, indent=4, ensure_ascii=False)
+            f.write(s)
 
 
 # TODO: добавить расчеты метрик по скорости вершины (все то же самое). Но как получать данные по скорости?
@@ -349,10 +363,12 @@ class MaintenanceReport(BaseReport):
         return self.__nid
 
     def __getitem__(self, key):
-        return adds.get_vals_from_inherited_keys(self.__reports, key)
+        # return adds.get_vals_from_inherited_keys(self.__reports, key)
+        return self.__reports[key]
 
     def __setitem__(self, key, value):
-        adds.set_vals_from_inherited_keys(self.__reports, key, value)
+        # adds.set_vals_from_inherited_keys(self.__reports, key, value)
+        self.__reports[key] = value
 
     def __len__(self):
         return len(self.__reports)
@@ -408,6 +424,12 @@ class MaintenanceReport(BaseReport):
     @property
     def general_info(self):
         return self.__general_info
+
+    def keys(self):
+        return self.__reports.keys()
+
+    def values(self):
+        return self.__reports.values()
 
     def prepare(self):
         for r in self.__reports.values():
@@ -635,8 +657,26 @@ class MaintenanceReport(BaseReport):
             'average_overfilled_nodes_relative_count': round(self.__total['overfilled_nodes_count']['average'] / len(self.__network), 4)
         }
 
-    def convert_to_excel(self):
+    def save_to_excel(self):
         return NotImplemented
+
+    def save_to_txt(self, file_path: str):
+        with open(os.path.abspath(file_path), 'w', encoding='utf-8') as f:
+            f.write('REPORTS:\n')
+            s = json.dumps(self.__reports, indent=4, ensure_ascii=False)
+            f.write(s)
+
+            f.write('\n\n')
+
+            f.write('TOTAL:\n')
+            s = json.dumps(self.__total, indent=4, ensure_ascii=False)
+            f.write(s)
+
+            f.write('\n\n')
+
+            f.write('GENERAL INFO:\n')
+            s = json.dumps(self.__general_info, indent=4, ensure_ascii=False)
+            f.write(s)
 
 
 

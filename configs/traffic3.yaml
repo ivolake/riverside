@@ -1,0 +1,41 @@
+streams:
+  "1":
+    message_path: D:\OneDrive\Documents\Python_Scripts\Networks_Science_2\messages\message2_1.txt
+    sender: "1"
+    receiver: "25"
+    packet_size: 480
+    protocol: UDP
+    special:
+      k: 1
+  "2":
+    message_path: D:\OneDrive\Documents\Python_Scripts\Networks_Science_2\messages\message2_2.txt
+    sender: "36"
+    receiver: "27"
+    packet_size: default
+    protocol: TCP
+    special:
+      k: 2
+  "3":
+    message_path: D:\OneDrive\Documents\Python_Scripts\Networks_Science_2\messages\message2_3.txt
+    sender: "7"
+    receiver: "70"
+    packet_size: 500
+    protocol: UDP
+    special:
+      k: 3
+  "4":
+    message_path: D:\OneDrive\Documents\Python_Scripts\Networks_Science_2\messages\message2_4.txt
+    sender: "69"
+    receiver: "56"
+    packet_size: default
+    protocol: UDP
+    special:
+      k: 3
+  "5":
+    message_path: D:\OneDrive\Documents\Python_Scripts\Networks_Science_2\messages\message2_5.txt
+    sender: "22"
+    receiver: "55"
+    packet_size: default
+    protocol: TCP
+    special:
+      k: 2
