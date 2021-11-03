@@ -1,11 +1,17 @@
-import argparse
 import sys
 import os
-import ruamel.yaml
-from Graphs import BaseGraph, VMRkGraph, MNRkGraph, BaseTelNet, VMRkTelNet, MNRkTelNet
+
+from Networks import BaseNetwork, TBNetwork
+from NetworksSupport import BaseReportAnalyzer
+from general import parse_args, get_yaml, get_graph, read_message
+
 
 # TODO: реализовать оптимизацию графа по инк-нодам и дек-нодам для поиска конфигурации с наибольшим количеством
-#  путей с конкретной достижимостью
+#  путей с конкретной достижимость
+#  Поставленная проблема в терминах применения нестандартной достижимости как инструмента поиска узлов
+#  копирования трафика сети: Как определить узлы, на которых будет происходить копирование так,
+#  чтобы произвести наименьшие изменения сети? Под изменениями в данном случае понимается
+#  добавление в узел аппаратуры клонирования трафика.
 
 # TODO: Сделать везде repr через additions.Representation
 
@@ -18,46 +24,6 @@ from Graphs import BaseGraph, VMRkGraph, MNRkGraph, BaseTelNet, VMRkTelNet, MNRk
 # TODO: после 100% загрузки пропускная способность ведер должна уходить в 0 (отказ функционирования реализовать)
 
 # TODO: отключение узлов при превышении нагрузки на узел -> динамический пересчет маршрутов потоков
-
-from Networks import BaseNetwork, TBNetwork
-from NetworksSupport import BaseReportAnalyzer
-
-
-def get_graph(config: dict) -> BaseGraph:
-    graph_type = config.get('type')
-    if graph_type == 'standard':
-        return BaseGraph(config)
-    elif graph_type == 'vmrk':
-        return VMRkGraph(config)
-    elif graph_type == 'mnrk':
-        return MNRkGraph(config)
-    elif graph_type == 'telnet':
-        return BaseTelNet(config)
-    elif graph_type == 'vmrk_telnet':
-        return VMRkTelNet(config)
-    elif graph_type == 'mnrk_telnet':
-        return MNRkTelNet(config)
-    else:
-        raise Exception('В конфигурационном файле объявлен неверный тип графа.')
-
-def get_yaml(path):
-    with open(os.path.abspath(path), 'r', encoding='utf-8') as f:
-        lines = f.readlines()
-    config = ruamel.yaml.load('\n'.join(lines), Loader=ruamel.yaml.SafeLoader)
-    return config
-
-
-def parse_args(args):
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--config_path')
-    parser.add_argument('--traffic_path')
-    return parser.parse_args(args)
-
-def read_message(path):
-    f = open(os.path.abspath(path), 'r', encoding='utf-8')
-    message = f.read()
-    f.close()
-    return message
 
 
 if __name__ == '__main__':
