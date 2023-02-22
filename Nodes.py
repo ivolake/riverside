@@ -5,7 +5,9 @@ import additions as adds
 
 from NetworksSupport import RandomJitter
 from Packets import BasePacket
-from config import JITTER_LOWEST_lOW, JITTER_HIGHEST_LOW, JITTER_LOWEST_HIGH, JITTER_HIGHEST_HIGH
+from config import JITTER_LOWEST_lOW, JITTER_HIGHEST_LOW, JITTER_LOWEST_HIGH, JITTER_HIGHEST_HIGH, \
+                   DEFAULT_FILLED_SPACE_FACTOR_LOW, DEFAULT_FILLED_SPACE_FACTOR_HIGH, DEFAULT_FILLED_SPACE_FACTOR_PLATEAU, \
+                   DEFAULT_JITTER_ACCURACY
 
 
 class BaseNode:
@@ -30,11 +32,11 @@ class BaseNode:
         self._jitter_f = RandomJitter(jitter_lowest_low,
                                       jitter_highest_low,
                                       jitter_lowest_high,
-                                      jitter_highest_high, accuracy=7)
+                                      jitter_highest_high, accuracy=DEFAULT_JITTER_ACCURACY)
 
-        self._filled_space_factor_low = kwargs.get('filled_space_factor', {}).get('low', 0.75)
-        self._filled_space_factor_high = kwargs.get('filled_space_factor', {}).get('high', 1)
-        self._filled_space_factor_plateau = kwargs.get('filled_space_factor', {}).get('plateau', 0.05)
+        self._filled_space_factor_low = kwargs.get('filled_space_factor', {}).get('low', DEFAULT_FILLED_SPACE_FACTOR_LOW)
+        self._filled_space_factor_high = kwargs.get('filled_space_factor', {}).get('high', DEFAULT_FILLED_SPACE_FACTOR_HIGH)
+        self._filled_space_factor_plateau = kwargs.get('filled_space_factor', {}).get('plateau', DEFAULT_FILLED_SPACE_FACTOR_PLATEAU)
 
         self._queue = OrderedDict({})  # еще не отправленные содержащиеся на узле пакеты (хранение в виде {pkt.id: pkt})
         self._awaiting = OrderedDict({})  # хранилище тех пакетов, которые были отправлены, но чье прибытие на оконечный узел

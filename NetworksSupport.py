@@ -187,6 +187,10 @@ class Operator:
     #         pkt = None
     #     return pkt is not None
 
+    # TODO: На данный момент путь пакетов не изменяется на протяжении путешествия. 
+    #  Реализовать новую функцию получения следующего узла адаптивным способом, 
+    #  при котором рассчет до точки назначения будет происходить каждый раз при поиске 
+    #  следующего узла и основываться на загруженности сети.
     def get_next_hop(self,
                      pkt: BasePacket,
                      current_node):
@@ -249,6 +253,7 @@ class Operator:
         self[pkt.sid].packets_time[pkt.id] += (pkt.size / overall_processing_speed) * (pkt_order + 1)
 
     @staticmethod
+    # TODO: Костыль, этот метод все таки должен быть в объекте вершины.
     def create_data_distortion(pkt: BasePacket,
                                current_node):
 

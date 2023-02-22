@@ -2,8 +2,7 @@ import json
 import math
 import random
 import string
-from collections import Iterable
-from typing import Tuple, List
+from typing import Tuple, List, Iterable
 import operator as op
 
 
@@ -13,6 +12,7 @@ class FineDict(dict):
 
     def __repr__(self):
         return json.dumps(self, indent=4)
+
 
 class Representation:
     def __init__(self, representing_obj, representing_fields: List = None):

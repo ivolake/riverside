@@ -22,6 +22,7 @@ def get_graph(config: dict) -> BaseGraph:
     else:
         raise Exception('В конфигурационном файле объявлен неверный тип графа.')
 
+
 def get_yaml(path):
     with open(os.path.abspath(path), 'r', encoding='utf-8') as f:
         lines = f.readlines()
@@ -34,6 +35,7 @@ def parse_args(args):
     parser.add_argument('--config_path')
     parser.add_argument('--traffic_path')
     return parser.parse_args(args)
+
 
 def read_message(path):
     f = open(os.path.abspath(path), 'r', encoding='utf-8')

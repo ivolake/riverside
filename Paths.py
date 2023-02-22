@@ -2,7 +2,7 @@ from operator import attrgetter
 from typing import List, Iterator
 
 # TODO: реализовать наследование базового пути и коллекции от соответствующих абстрактных классов
-from additions import FineDict
+from additions import FineDict, generate_path_edges
 
 
 class Path(List):
@@ -75,6 +75,10 @@ class Path(List):
 
     def __iter__(self) -> Iterator:
         return iter(self.path)
+    #
+    # @property
+    # def edges(self):
+    #     return generate_path_edges(self.path)
 
     def append(self, value: str) -> None:
         self.path.append(value)

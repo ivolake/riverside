@@ -243,6 +243,7 @@ class MNRkGraph(BaseGraph):
                         total_mc[k] += 1
         return total_mc
 
+
 class BaseTelNet(BaseGraph):
 
     def __init__(self, config):
@@ -259,6 +260,7 @@ class BaseTelNet(BaseGraph):
     def __repr__(self):
         return f'BaseTelNetGraph(type={self.type}, nodes={self.nodes}, weighted={self.weighted})'
 
+
 class VMRkTelNet(BaseTelNet, VMRkGraph):
 
     def __init__(self, config):
@@ -271,6 +273,7 @@ class VMRkTelNet(BaseTelNet, VMRkGraph):
 
     def __repr__(self):
         return f'VMRkTelNetGraph(type={self.type}, nodes={self.nodes}, inc_nodes={self.inc_nodes}, weighted={self.weighted})'
+
 
 class MNRkTelNet(BaseTelNet, MNRkGraph):
 

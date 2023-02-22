@@ -431,8 +431,11 @@ class MaintenanceReport(BaseReport):
     def values(self):
         return self.__reports.values()
 
+    # noinspection PyTypeChecker
     def prepare(self):
-        for r in self.__reports.values():
+        network_capacity = 0
+        reports_values = self.__reports.values()
+        for r in reports_values:
             fs = r['data_recorded']['filled_space']
             fs_sum = sum(fs)
             fs_len = len(fs)
@@ -446,6 +449,7 @@ class MaintenanceReport(BaseReport):
             r['metrics']['filled_space']['max'] = max(fs)
 
             capacity = r['capacity']
+            network_capacity += capacity
             fs_rel = [round(fs_record/capacity, 4) for fs_record in fs]
             fs_rel_sum = sum(fs_rel)
             fs_rel_len = len(fs_rel)
@@ -495,6 +499,16 @@ class MaintenanceReport(BaseReport):
                 r['metrics']['overfilled_space_relative']['median'] = 0
                 r['metrics']['overfilled_space_relative']['min'] = 0
                 r['metrics']['overfilled_space_relative']['max'] = 0
+        network_fs = []
+        # noinspection PyTypeChecker
+        n_ticks = len(list(reports_values)[0]['data_recorded']['filled_space'])
+        n_nodes = len(reports_values)
+        for i in range(n_ticks):
+            val = 0
+            for r in reports_values:
+                val += r['data_recorded']['filled_space'][i]
+            val /= n_nodes
+            network_fs.append(val / network_capacity)
 
 
 
@@ -526,6 +540,7 @@ class MaintenanceReport(BaseReport):
 
 
         fs_matrix_T = [] # значения объединены по строкам (одна строка - один "тик" системы)
+        # noinspection PyTypeChecker
         fs_len = len(self.__reports[list(self.__reports.keys())[0]]['data_recorded']['filled_space']) # исходим из предположения, что все длины одинаковые (иначе быть не может)
         for i in range(fs_len):
             fs_matrix_T.append([])

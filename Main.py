@@ -25,6 +25,10 @@ from general import parse_args, get_yaml, get_graph, read_message
 
 # TODO: отключение узлов при превышении нагрузки на узел -> динамический пересчет маршрутов потоков
 
+# TODO: переименовать "конфиг-файл" (файл с описанием сети) в программе в "файл сети"
+
+# TODO: Добавить возможность записывать в файл сети tb_params
+
 
 if __name__ == '__main__':
     args = parse_args(sys.argv[1:])
@@ -72,13 +76,17 @@ if __name__ == '__main__':
     maintenance_report.prepare_total()
     maintenance_report.prepare_general_info()
 
-    os.mkdir('D:\OneDrive\Documents\Научная работа\Научная работа лето 3-4 курс 2020 и зима 4 курс 2020-2021\\Тесты\\Тест2')
-    base_traffic_report.save_to_txt('D:\OneDrive\Documents\Научная работа\Научная работа лето 3-4 курс 2020 и зима 4 курс 2020-2021\\Тесты\\Тест2\\base_traffic_report_test2.txt')
-    base_maintenance_report.save_to_txt('D:\OneDrive\Documents\Научная работа\Научная работа лето 3-4 курс 2020 и зима 4 курс 2020-2021\\Тесты\\Тест2\\base_maintenance_report_test2.txt')
-    traffic_report.save_to_txt('D:\OneDrive\Documents\Научная работа\Научная работа лето 3-4 курс 2020 и зима 4 курс 2020-2021\\Тесты\\Тест2\\traffic_report_test2.txt')
-    maintenance_report.save_to_txt('D:\OneDrive\Documents\Научная работа\Научная работа лето 3-4 курс 2020 и зима 4 курс 2020-2021\\Тесты\\Тест2\\maintenance_report_test2.txt')
+    experiment_name = '3'
+    tests_dir_path = os.path.abspath(f'D:\\OneDrive\\Documents\\Научная работа\\Научная работа лето 3-4 курс 2020, осень 5 курс 2021\\Тесты\\Тест_{experiment_name}\\')
 
-    1+1
+    if not os.path.isdir(tests_dir_path):
+        os.mkdir(tests_dir_path)
+    base_traffic_report.save_to_txt(os.path.join(tests_dir_path, f'base_traffic_report_test_{experiment_name}.log'))
+    base_maintenance_report.save_to_txt(os.path.join(tests_dir_path, f'base_maintenance_report_test_{experiment_name}.log'))
+    traffic_report.save_to_txt(os.path.join(tests_dir_path, f'traffic_report_test_{experiment_name}.log'))
+    maintenance_report.save_to_txt(os.path.join(tests_dir_path, f'maintenance_report_test_{experiment_name}.log'))
+
+    # 1+1
     # quality_report = A.get_efforts_quality(base_traffic_report, traffic_report)
     # efficiency_report = A.get_efforts_efficiency(base_maintenance_report, maintenance_report)
 

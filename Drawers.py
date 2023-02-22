@@ -128,6 +128,7 @@ class BaseDrawer:
             dec_color = int(self.drawer_config.first_path_hex_color, base=16)  # из формата '0xffffff' в '#ffffff'
             for p in self._paths:  # здесь добавляем все пути в виде последовательности ребер в объект графа
                 path_edges = generate_path_edges(p)  # превращаю последовательность вершин в последовательность ребер
+                # path_edges = p.edges  # превращаю последовательность вершин в последовательность ребер
                 hex_color = '#0' + hex(dec_color)[2:]
                 if len(hex_color) > 7:
                     hex_color = '#' + hex(dec_color)[2:]
