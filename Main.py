@@ -76,15 +76,15 @@ if __name__ == '__main__':
     maintenance_report.prepare_total()
     maintenance_report.prepare_general_info()
 
-    experiment_name = '3'
+    experiment_name = '4'
     tests_dir_path = os.path.abspath(f'D:\\OneDrive\\Documents\\Научная работа\\Научная работа лето 3-4 курс 2020, осень 5 курс 2021\\Тесты\\Тест_{experiment_name}\\')
 
     if not os.path.isdir(tests_dir_path):
         os.mkdir(tests_dir_path)
-    base_traffic_report.save_to_txt(os.path.join(tests_dir_path, f'base_traffic_report_test_{experiment_name}.log'))
-    base_maintenance_report.save_to_txt(os.path.join(tests_dir_path, f'base_maintenance_report_test_{experiment_name}.log'))
-    traffic_report.save_to_txt(os.path.join(tests_dir_path, f'traffic_report_test_{experiment_name}.log'))
-    maintenance_report.save_to_txt(os.path.join(tests_dir_path, f'maintenance_report_test_{experiment_name}.log'))
+    base_traffic_report.save_to_txt(os.path.join(tests_dir_path, f'base_traffic_report_test_{experiment_name}.json'))
+    base_maintenance_report.save_to_txt(os.path.join(tests_dir_path, f'base_maintenance_report_test_{experiment_name}.json'))
+    traffic_report.save_to_txt(os.path.join(tests_dir_path, f'traffic_report_test_{experiment_name}.json'))
+    maintenance_report.save_to_txt(os.path.join(tests_dir_path, f'maintenance_report_test_{experiment_name}.json'))
 
     # 1+1
     # quality_report = A.get_efforts_quality(base_traffic_report, traffic_report)

@@ -219,7 +219,7 @@ class MaintenanceReport(BaseReport):
 
         self.__network = network
 
-        ids = [str(n) for n in self.__network.nodes]
+        ids = ['network'] + [str(n) for n in self.__network.nodes]
 
         reports = [{
             'id': node_id,
@@ -254,7 +254,7 @@ class MaintenanceReport(BaseReport):
                     'max': None,
                 },
             },
-        } for node_id, node in self.__network.nodes.items()]
+        } for node_id, node in [('network', self.__network)] + list(self.__network.nodes.items())]
 
         self.__reports = dict(zip(ids, reports))
 

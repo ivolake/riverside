@@ -312,6 +312,10 @@ class BaseNetwork:
                         self._operator[packet.sid].packets_time.update({packet.id: 0}) # добавление пакета в оперативную память для отслеживания времени его путешествия
 
 
+                if maintenance_report['network']['data_recorded']['filled_space'] is None:
+                    maintenance_report['network']['data_recorded']['filled_space'] = []
+                maintenance_report['network']['data_recorded']['filled_space'].append(sum([node.filled_space for node in self.nodes.values()]))
+
                 for node in self.nodes.values():
                     if maintenance_report[node.id]['data_recorded']['filled_space'] is None:
                         maintenance_report[node.id]['data_recorded']['filled_space'] = []
