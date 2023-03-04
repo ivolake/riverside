@@ -1,10 +1,8 @@
 import sys
 import os
 
-from Networks import BaseNetwork, TBNetwork
-from NetworksSupport import BaseReportAnalyzer
-from general import parse_args, get_yaml, get_graph, read_message
-
+from Scripts import *
+from general import parse_args, get_yaml
 
 # TODO: реализовать оптимизацию графа по инк-нодам и дек-нодам для поиска конфигурации с наибольшим количеством
 #  путей с конкретной достижимость
@@ -35,56 +33,19 @@ if __name__ == '__main__':
     config = get_yaml(args.config_path)
     traffic_params = get_yaml(args.traffic_path)
 
-    graph = get_graph(config.get('graph'))
+    _en = '5'
+    experiment_params = {
+        'name': _en,
+        'reports_path': os.path.abspath(f'D:\\OneDrive\\Documents\\Научная работа\\Научная работа лето 3-4 курс 2020, осень 5 курс 2021\\Тесты\\Тест_{_en}\\')
+    }
 
-    BN = BaseNetwork(graph=graph)
+    script_1(config,
+             traffic_params,
+             experiment_params)
 
-    for stream in traffic_params['streams'].values():
-        BN.add_message_to_send(message=read_message(path=stream['message_path']),
-                               sender=stream['sender'],
-                               receiver=stream['receiver'],
-                               packet_size=None if stream['packet_size'] == 'default' else int(stream['packet_size']),
-                               protocol=stream['protocol'],
-                               special=stream.get('special', None))
-
-    base_traffic_report, base_maintenance_report = BN.send_messages(verbose=True)
-
-    base_traffic_report.prepare()
-    base_maintenance_report.prepare()
-    base_maintenance_report.prepare_total()
-    base_maintenance_report.prepare_general_info()
-
-
-    A = BaseReportAnalyzer(base_maintenance_report)
-    tb_params = A.simple_analysis_few_nodes(n=2)
-
-
-    TBN = TBNetwork(graph=graph, tb_params=tb_params)
-
-    for stream in traffic_params['streams'].values():
-        TBN.add_message_to_send(message=read_message(path=stream['message_path']),
-                                sender=stream['sender'],
-                                receiver=stream['receiver'],
-                                packet_size=None if stream['packet_size'] == 'default' else int(stream['packet_size']),
-                                protocol=stream['protocol'],
-                                special=stream.get('special', None))
-
-    traffic_report, maintenance_report = TBN.send_messages(verbose=True)
-
-    traffic_report.prepare()
-    maintenance_report.prepare()
-    maintenance_report.prepare_total()
-    maintenance_report.prepare_general_info()
-
-    experiment_name = '4'
-    tests_dir_path = os.path.abspath(f'D:\\OneDrive\\Documents\\Научная работа\\Научная работа лето 3-4 курс 2020, осень 5 курс 2021\\Тесты\\Тест_{experiment_name}\\')
-
-    if not os.path.isdir(tests_dir_path):
-        os.mkdir(tests_dir_path)
-    base_traffic_report.save_to_txt(os.path.join(tests_dir_path, f'base_traffic_report_test_{experiment_name}.json'))
-    base_maintenance_report.save_to_txt(os.path.join(tests_dir_path, f'base_maintenance_report_test_{experiment_name}.json'))
-    traffic_report.save_to_txt(os.path.join(tests_dir_path, f'traffic_report_test_{experiment_name}.json'))
-    maintenance_report.save_to_txt(os.path.join(tests_dir_path, f'maintenance_report_test_{experiment_name}.json'))
+    # script_2(config,
+    #          traffic_params,
+    #          experiment_params)
 
     # 1+1
     # quality_report = A.get_efforts_quality(base_traffic_report, traffic_report)

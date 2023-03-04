@@ -41,6 +41,7 @@ class Jitter:
     def _high(self):
         return int(self.high * self._order_multiplier)
 
+
 class RandomJitter(Jitter):
     def __init__(self, lowest_low: float, highest_low: float,
                  lowest_high: float, highest_high: float,
@@ -79,6 +80,7 @@ class RandomJitter(Jitter):
     def _highest_high_order_multiplier(self):
         i = len(str(self.highest_high).replace('.', ''))
         return 10 ** (i - 1 + self._additional_power)
+
 
 class Traffic:
     def __init__(self, streams: List[BaseStream] = None):
@@ -127,6 +129,21 @@ class Traffic:
         self.__streams = []
 
 
+class TrafficGenerator:
+    def __init__(self,
+                 params):
+        self._message_paths_pool = params['message_paths_pool']
+        self._messages_count = params['messages_count']
+        self._senders_pool = params['senders_pool']
+        self._receivers_pool = params['receivers_pool']
+        self._packets_size = params['packets_size']
+        self._protocols_pool = params['protocols_pool']
+        self._start_timeouts_pool = params['start_timeouts_pool']
+        self._k_pool = params['special'][' k_pool']
+
+
+
+
 class TCPStreamData:
     def __init__(self,
                  stream: BaseStream,
@@ -162,6 +179,7 @@ class UDPStreamData:
 class Operator:
     def __init__(self):
         self.__streams_data = {}
+        self._current_time = 0
 
     def __getitem__(self, key):
         return self.__streams_data.get(key, None)
@@ -170,7 +188,7 @@ class Operator:
         self.__streams_data.update({key: value})
 
     def __repr__(self):
-        packets = list(chain([ [ None if sd.stream.get_by_id(p_id) is None else sd.stream.get_by_id(p_id).id for p_id in sd.packets_time] for sd in self.__streams_data.values()]))
+        packets = list(chain([[None if sd.stream.get_by_id(p_id) is None else sd.stream.get_by_id(p_id).id for p_id in sd.packets_time] for sd in self.__streams_data.values()]))
         return f'Operator(streams_ids={list(self.__streams_data.keys())}, packets={packets})'
 
     def keys(self):
@@ -189,7 +207,7 @@ class Operator:
 
     # TODO: На данный момент путь пакетов не изменяется на протяжении путешествия. 
     #  Реализовать новую функцию получения следующего узла адаптивным способом, 
-    #  при котором рассчет до точки назначения будет происходить каждый раз при поиске 
+    #  при котором расчет до точки назначения будет происходить каждый раз при поиске
     #  следующего узла и основываться на загруженности сети.
     def get_next_hop(self,
                      pkt: BasePacket,

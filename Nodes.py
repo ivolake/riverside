@@ -126,16 +126,6 @@ class BaseNode:
             return -1
 
     def pop_from_queue(self, pkt: BasePacket):
-        """
-
-        Parameters
-        ----------
-        sid_pid - строка формата "sid.pid", чтобы найти пакет
-
-        Returns
-        -------
-
-        """
         if pkt is not None:
             return self._queue.pop(f'{pkt.sid}.{pkt.pid}.{pkt.id}')
         else:
@@ -170,16 +160,6 @@ class BaseNode:
             return -1
 
     def pop_from_successful(self, pkt: BasePacket or None):
-        """
-
-        Parameters
-        ----------
-        sid_pid - строка формата "sid.pid", чтобы найти пакет
-
-        Returns
-        -------
-
-        """
         if pkt is not None:
             return self._successful.pop(f'{pkt.sid}.{pkt.pid}.{pkt.id}')
         else:

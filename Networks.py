@@ -15,7 +15,8 @@ from Packets import BasePacket
 from Streams import BaseStream, TCPStream, UDPStream
 from config import CAPACITY_LOWEST, CAPACITY_HIGHEST, PROCESSING_SPEED_LOWEST, PROCESSING_SPEED_HIGHEST, \
     DISTORTION_PROBABILITY_LOWEST, DISTORTION_PROBABILITY_HIGHEST, DISTORTION_LEVEL_LOWEST, DISTORTION_LEVEL_HIGHEST, \
-    DROP_THRESHOLD
+    DROP_THRESHOLD, DEFAULT_CYCLE_TIME, DEFAULT_TCP_TIMEOUT, DEFAULT_TCP_ATTEMPTS_LIMIT
+from general import read_message
 
 
 class BaseNetwork:
@@ -25,8 +26,10 @@ class BaseNetwork:
         self._id = str(id(self))
 
 
-        self.TCP_timeout = self._options.get('TCP_timeout', 20)
-        self.TCP_attempts_limit = self._options.get('TCP_attempts_limit', 5)
+        self.cycle_time = self._options.get('cycle_time', DEFAULT_CYCLE_TIME)
+
+        self.TCP_timeout = self._options.get('TCP_timeout', DEFAULT_TCP_TIMEOUT)
+        self.TCP_attempts_limit = self._options.get('TCP_attempts_limit', DEFAULT_TCP_ATTEMPTS_LIMIT)
 
         self._init_nodes()
 
@@ -238,6 +241,16 @@ class BaseNetwork:
         else:
             raise Exception(f'Протокол {protocol} не является допустимым.')
 
+    def add_traffic_to_send(self,
+                            traffic_params):
+        for stream in traffic_params['streams'].values():
+            self.add_message_to_send(message=read_message(path=stream['message_path']),
+                                     sender=stream['sender'],
+                                     receiver=stream['receiver'],
+                                     packet_size=None if stream['packet_size'] == 'default' else int(stream['packet_size']),
+                                     protocol=stream['protocol'],
+                                     special=stream.get('special', None))
+
     def send_messages(self, verbose: bool = False):
         if len(self._traffic_to_send) == 0:
             raise Exception('Нет сообщений для отправки. Воспользуйтесь методом add_message_to_send()')
@@ -308,13 +321,8 @@ class BaseNetwork:
                     for packet in popped_packets:
                         packet_sender_id = packet.sender
                         packet_sender = self.nodes[packet_sender_id]
-                        packet_sender.add_to_queue(packet) # добавление пакета в свой стартовый узел
-                        self._operator[packet.sid].packets_time.update({packet.id: 0}) # добавление пакета в оперативную память для отслеживания времени его путешествия
-
-
-                if maintenance_report['network']['data_recorded']['filled_space'] is None:
-                    maintenance_report['network']['data_recorded']['filled_space'] = []
-                maintenance_report['network']['data_recorded']['filled_space'].append(sum([node.filled_space for node in self.nodes.values()]))
+                        packet_sender.add_to_queue(packet)  # добавление пакета в свой стартовый узел
+                        self._operator[packet.sid].packets_time.update({packet.id: 0})  # добавление пакета в оперативную память для отслеживания времени его путешествия
 
                 for node in self.nodes.values():
                     if maintenance_report[node.id]['data_recorded']['filled_space'] is None:
@@ -331,7 +339,7 @@ class BaseNetwork:
                                                              packet_order,
                                                              node)  # добавление времени обработки ко времени путешествия объекта (время обработки зависит от положения в очереди)
                         self._operator.create_data_distortion(packet,
-                                                              node) # моделирование случайных повреждений данных
+                                                              node)  # моделирование случайных повреждений данных
 
                         if packet.protocol == 'TCP':
                             if packet.sender == node.id:
@@ -464,6 +472,240 @@ class BaseNetwork:
             self._traffic_to_send.flush()
 
 
+    def start_traffic_new(self, traffic: Traffic, verbose: bool = False) -> Tuple[TrafficReport, MaintenanceReport]:
+        """
+        Моделирование с временем такта сети.
+        Parameters
+        ----------
+        traffic
+        verbose
+
+        Returns
+        -------
+
+        """
+        try:
+            if traffic.empty():
+                raise Exception('Переданный объект трафика пуст (ни в одном из потоков нет пакетов)')
+
+            traffic_report = TrafficReport(traffic)
+            maintenance_report = MaintenanceReport(self)
+
+            for i, s in enumerate(traffic):
+                paths = self.cafapatcp(s=s)
+                paths.sort_by_time()
+
+                if s.protocol == 'TCP':
+                    reverse_paths = self.cafapatcp(s=s, reverse=True)
+                    self._operator[s.id] = TCPStreamData(stream=s,
+                                                         path=paths.get_shortest(),
+                                                         reverse_path=reverse_paths.get_shortest())
+                elif s.protocol == 'UDP':
+                    self._operator[s.id] = UDPStreamData(stream=s,
+                                                         paths=paths)
+                else:
+                    raise Exception(f'Протокол {s.protocol} потока с id={s.id} не является допустимым.')
+
+            all_messages_delivered = False
+            __i = 0
+            while not all_messages_delivered:
+                if verbose:
+                    print(f'{__i} {self.filled_space_relative}', end='\r')
+                __i += 1
+
+                all_messages_delivered = True
+                # дальше при итерировании по вершинам этот флаг обернется в False, если хоть
+                #  на какой-то вершине у какого-либо пакета ((receiver != название вершины) или (next_hop не пустой))
+
+                if not traffic.empty():
+                    popped_packets = traffic.pop_packets()
+                    for packet in popped_packets:
+                        packet_sender_id = packet.sender
+                        packet_sender = self.nodes[packet_sender_id]
+                        packet_sender.add_to_queue(packet)  # добавление пакета в свой стартовый узел
+                        self._operator[packet.sid].packets_time.update({packet.id: 0})  # добавление пакета в оперативную память для отслеживания времени его путешествия
+
+
+                for node in self.nodes.values():
+                    if maintenance_report[node.id]['data_recorded']['filled_space'] is None:
+                        maintenance_report[node.id]['data_recorded']['filled_space'] = []
+
+                    maintenance_report[node.id]['data_recorded']['filled_space'].append(node.filled_space)
+
+                    if all_messages_delivered and (len(node.queue) > 0 or len(node.awaiting) > 0):
+                        all_messages_delivered = False
+
+                    node_queue_tmp = OrderedDict(zip(node.queue.keys(), node.queue.values()))
+                    for packet_order, packet in enumerate(node_queue_tmp.values()):
+                        self._operator.increment_travel_time(packet,
+                                                             packet_order,
+                                                             node)  # добавление времени обработки ко времени путешествия объекта (время обработки зависит от положения в очереди)
+                        self._operator.create_data_distortion(packet,
+                                                              node)  # моделирование случайных повреждений данных
+
+                        if packet.protocol == 'TCP':
+                            if packet.sender == node.id:
+                                if not packet.is_answer:
+                                    # проверка, есть ли перед ним уже ждущий очереди пакет ИЗ ЕГО ПОТОКА
+                                    same_stream_awaiting_packets = [
+                                        ((packet.sid == a_packet.sid) and not a_packet.is_answer) for a_packet in
+                                        node.awaiting.values()]  # получение списка информ-пакетов того же потока в очереди ожидания
+                                    same_stream_awaiting_packets = list(
+                                        compress(list(node.awaiting.values()), same_stream_awaiting_packets))
+                                    if len(same_stream_awaiting_packets) <= 0:  # если нет, то можно отправлять этот пакет (предыдущий был отправлен или это первый)
+                                        # передача в next_hop копии пакета
+                                        moving_packet = node.pop_from_queue(packet)  # забор пакета из текущего узла
+                                        moving_packet.sending_attempts += 1  # сохранение данных о количестве попыток отправки
+                                        moving_packet_copy = moving_packet.copy()  # создание независимой копии
+                                        self._operator[packet.sid].packets_time.update({
+                                                                                           moving_packet_copy.id: 0})  # добавление копии в оперативную память для отслеживания времени ее путешествия
+                                        # self.operator[moving_packet_copy.sid].stream.packets.append(moving_packet_copy) # добавление копии в поток изначального пакета
+                                        node.add_to_awaiting(moving_packet)  # добавление пакета в список ожидания
+                                        next_hop_node = self.nodes[self._operator.get_next_hop(moving_packet_copy,
+                                                                                               node)]  # получение следующего узла
+                                        next_hop_node.add_to_queue(
+                                            moving_packet_copy)  # перемещение копии пакета вперед по маршруту
+                                        self._operator[moving_packet_copy.sid].packets_time[
+                                            moving_packet_copy.id] += moving_packet_copy.size / self.graph.edges[(
+                                        node.id,
+                                        next_hop_node.id)]  # просчет времени перемещения пакета-копии по каналу связи между узлами
+
+                                    else:  # есть предыдущий, и он еще ждет свой пакет-ответ
+                                        self._operator[packet.sid].packets_time.update({
+                                                                                           packet.id: 0})  # тогда и этот пакет ждет. Но фактически он еще не начал двигаться, поэтому его отсчет времени еще не начался.
+                                else:
+                                    # передача в next_hop
+                                    moving_packet = node.pop_from_queue(packet)  # забор пакета из текущего узла
+                                    next_hop_node = self.nodes[
+                                        self._operator.get_next_hop(moving_packet, node)]  # получение следующего узла
+                                    next_hop_node.add_to_queue(moving_packet)  # перемещение пакета вперед по маршруту
+                                    self._operator[moving_packet.sid].packets_time[
+                                        moving_packet.id] += moving_packet.size / self.graph.edges[(node.id,
+                                                                                                    next_hop_node.id)]  # просчет времени перемещения пакета по каналу связи между узлами
+
+                            elif packet.receiver == node.id:
+                                if packet.is_answer:
+                                    # # тут было ветвление на на ситуацию с пустым некстхоп и непустым
+                                    moving_packet = node.pop_from_queue(packet)  # забор пакета из текущего узла
+                                    node.add_to_awaiting(moving_packet)  # перемещение пакета-ответа в список ожидания
+                                else:
+                                    moving_packet = node.pop_from_queue(packet)  # забор пакета из текущего узла
+                                    node.add_to_successful(
+                                        moving_packet)  # перемещение в список успешно дошедших пакетов
+                                    answer_packet = self._operator[moving_packet.sid].stream.create_answer_to_packet(
+                                        moving_packet)  # создание пакета-ответа для packet
+                                    # self.operator[moving_packet.sid].stream.packets.append(answer_packet) # добавление пакета-ответа в поток изначального пакета
+                                    node.add_to_queue(answer_packet)  # добавление пакета-ответа в очередь
+                                    self._operator[answer_packet.sid].packets_time.update({
+                                                                                              answer_packet.id: 0})  # добавление пакета-ответа в оперативную память для отслеживания времени ее путешествия
+                            else:
+                                # передача в next_hop
+                                moving_packet = node.pop_from_queue(packet)  # забор пакета из текущего узла
+                                next_hop_node = self.nodes[
+                                    self._operator.get_next_hop(moving_packet, node)]  # получение следующего узла
+                                next_hop_node.add_to_queue(moving_packet)  # перемещение пакета вперед по маршруту
+                                self._operator[moving_packet.sid].packets_time[moving_packet.id] += moving_packet.size / \
+                                                                                                    self.graph.edges[(
+                                                                                                    node.id,
+                                                                                                    next_hop_node.id)]  # просчет времени перемещения пакета по каналу связи между узлами
+                        elif packet.protocol == 'UDP':
+                            if packet.receiver == node.id:
+                                moving_packet = node.pop_from_queue(packet)  # забор пакета из текущего узла
+                                node.add_to_successful(moving_packet)
+                            else:
+                                # передача в next_hop
+                                moving_packet = node.pop_from_queue(packet)  # забор пакета из текущего узла
+                                next_hop_node = self.nodes[
+                                    self._operator.get_next_hop(moving_packet, node)]  # получение следующего узла
+                                next_hop_node.add_to_queue(moving_packet)  # перемещение пакета вперед по маршруту
+                                self._operator[moving_packet.sid].packets_time[moving_packet.id] += moving_packet.size / \
+                                                                                                    self.graph.edges[(
+                                                                                                    node.id,
+                                                                                                    next_hop_node.id)]
+                        else:
+                            raise Exception(
+                                f'Протокол пакета (sid: {packet.sid}, id: {packet.id}) не распознан ({packet.protocol})')
+                            # print(e)
+
+                    node_awaiting_tmp = OrderedDict(zip(node.awaiting.keys(), node.awaiting.values()))
+                    for packet_order, packet in enumerate(node_awaiting_tmp.values()):
+                        self._operator.increment_travel_time(packet,
+                                                             packet_order,
+                                                             node)  # добавление времени обработки ко времени путешествия объекта (время обработки зависит от положения в очереди)
+                        self._operator.create_data_distortion(packet,
+                                                              node)  # моделирование случайных повреждений данных
+
+                        if not packet.is_answer:
+                            answer = None
+                            for search_packet in set(node.awaiting.values()) - {packet}:
+                                cond = search_packet.is_answer and search_packet.sid == packet.sid and search_packet.pid == packet.pid
+                                if answer is None and cond:
+                                    answer = search_packet
+                            if answer is not None:
+                                if self._operator.get_travel_time(packet) < self.TCP_timeout:
+                                    node.pop_from_awaiting(packet)  # удаление информ-пакета из очереди ожидания
+                                    node.pop_from_awaiting(answer)  # удаление пакета-ответа
+                                else:
+                                    node.pop_from_awaiting(answer)  # удаление пакета-ответа из очереди ожидания
+                                    existing_copy_id = packet.copy_id
+                                    existing_copy_time = self._operator[packet.sid].packets_time[existing_copy_id]
+                                    if packet.sending_attempts < self.TCP_attempts_limit:
+                                        packet.sending_attempts += 1
+                                        packet_copy = packet.copy()  # создание независимой копии
+                                        self._operator[packet_copy.sid].packets_time.update({
+                                                                                                packet_copy.id: existing_copy_time})  # добавление копии в оперативную память для отслеживания времени ее путешествия. Так как было затрачено время на ожидание предыдущего раза, оно прибавляется ко времени нового.
+                                        next_hop_node = self.nodes[
+                                            self._operator.get_next_hop(packet_copy, node)]  # получение следующего узла
+                                        next_hop_node.add_to_queue(
+                                            packet_copy)  # перемещение копии пакета вперед по маршруту
+                                        self._operator[packet_copy.sid].packets_time[
+                                            packet_copy.id] += packet_copy.size / self.graph.edges[
+                                            (node.id, next_hop_node.id)]
+                                    else:
+                                        node.pop_from_awaiting(packet)  # удаление информ-пакета из очереди ожидания
+                                        # таким образом, этот пакет остается не доставленным.
+
+                                    packet_copy, packet_copy_node, packet_copy_node_storage = self.find_packet_by_id(
+                                        existing_copy_id)
+                                    if packet_copy is not None:
+                                        packet_copy_node.pop_from_successful(
+                                            packet_copy)  # симуляция "недоставленности" - удаление копии с конечной вершины (передается пакет, а удаляется по факту его копия)
+                                    else:
+                                        pass  # raise Exception('Копия пакета не была найдена. Обеспечивать недоставленность не удалось.')
+                            else:
+                                ...  # информ-пакет продолжает ждать свой ответ
+
+            # Все пакеты доставлены, начинается обработка доставленных пакетов и восстановление сообщений
+
+            for node in self.nodes.values():
+                for packet in node.successful.values():
+                    if traffic_report[packet.sid]['received_packets'] is None:
+                        traffic_report[packet.sid]['received_packets'] = {}
+
+                    traffic_report[packet.sid]['received_packets'].update({
+                        packet.pid: packet
+                    })
+
+                    if traffic_report[packet.sid]['received_data']['packets_time'] is None:
+                        traffic_report[packet.sid]['received_data']['packets_time'] = {}
+
+                    traffic_report[packet.sid]['received_data']['packets_time'].update({
+                        packet.pid: self._operator[packet.sid].packets_time[packet.id]
+                    })
+
+            for r in traffic_report.values():
+                if r['received_packets'] is None:
+                    r['received_packets'] = {}
+
+                if r['received_data']['packets_time'] is None:
+                    r['received_data']['packets_time'] = {}
+
+            return traffic_report, maintenance_report
+        finally:
+            self._traffic_to_send.flush()
+
+    def start_traffic_from_file(self, traffic_file_path: str, verbose: bool = False) -> Tuple[TrafficReport, MaintenanceReport]:
+        ...
 
 
 

@@ -149,7 +149,7 @@ class TrafficReport(BaseReport):
         for sid, r in self.__reports.items():
             if r['protocol'] == 'TCP':
                 for p_time in r['received_data']['packets_time'].values():
-                    r['time'] += p_time
+                    r['time'] += round(p_time, 5)
             elif r['protocol'] == 'UDP':
                 r['time'] = max(r['received_data']['packets_time'].values())
             else:
@@ -219,14 +219,14 @@ class MaintenanceReport(BaseReport):
 
         self.__network = network
 
-        ids = ['network'] + [str(n) for n in self.__network.nodes]
+        ids = [str(n) for n in self.__network.nodes]
 
         reports = [{
             'id': node_id,
             'capacity': node.capacity,
             # 'processing_speed': node.processing_speed,
             'data_recorded': {
-                'filled_space': None, # список
+                'filled_space': None,  # список
             },
             'metrics': {
                 'filled_space': {
@@ -254,7 +254,7 @@ class MaintenanceReport(BaseReport):
                     'max': None,
                 },
             },
-        } for node_id, node in [('network', self.__network)] + list(self.__network.nodes.items())]
+        } for node_id, node in list(self.__network.nodes.items())]
 
         self.__reports = dict(zip(ids, reports))
 

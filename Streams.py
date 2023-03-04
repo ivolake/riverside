@@ -39,7 +39,7 @@ class BaseStream:
         if packet_size is not None:
             self.packet_size = packet_size
         else:
-            estimating_data_size = math.trunc(len(self.message)/ 50) + 1 # делим размер сообщения в байтах на 30
+            estimating_data_size = math.trunc(len(self.message) * 2 / 100) + 1  # делим размер сообщения в байтах на 50
 
             self.packet_size = math.trunc((estimating_data_size + len(' "data": "",')) * 2 + self.pkt_headings_size) + 1
 

@@ -20,9 +20,9 @@ graph:
       # Параметры узлов (актуально только для телекоммуникационных сетей, то есть в type должно быть значение, содержащее слово telnet)
         1:
         # ID узла (имя узла)
-          capacity: 7645
+          capacity: 250000000 # 2000 * 10**6 / 8 (в байтах)
           # ^ Емкость узла в байтах. При отсуствии данного параметра производится выбор случайного значения из отрезка [1000, 10000]
-          processing_speed: 150
+          processing_speed: 18750000  # (в байтах)
           # ^ Скорость обработки информации на узле в байтах. При отсуствии данного параметра производится выбор случайного значения из отрезка [100, 1000]
           distortion_probability: 30
           # ^ Вероятность искажения данных пакета при обработке на узле. При отсуствии данного параметра производится выбор случайного значения из отрезка [0, 100]
@@ -52,72 +52,72 @@ graph:
               plateau: 0.08
               # ^ При сильной перегрузке узла его скорость будет умножаться на это значение
         2:
-          capacity: 7059
-          processing_speed: 965
+          capacity: 194875000  # (в байтах)
+          processing_speed: 20625000  # (в байтах)
           distortion_probability: 2
           distortion_level: 2
         3:
-          capacity: 4648
-          processing_speed: 690
+          capacity: 206000000  # (в байтах)
+          processing_speed: 11250000  # (в байтах)
           distortion_probability: 48
           distortion_level: 2
         4:
-          capacity: 6304
-          processing_speed: 245
+          capacity: 288000000  # (в байтах)
+          processing_speed: 18125000  # (в байтах)
           distortion_probability: 96
           distortion_level: 4
         5:
-          capacity: 6589
-          processing_speed: 920
+          capacity: 197875000  # (в байтах)
+          processing_speed: 15000000  # (в байтах)
           distortion_probability: 98
           distortion_level: 5
         6:
-          capacity: 4837
-          processing_speed: 494
+          capacity: 117125000  # (в байтах)
+          processing_speed: 24250000  # (в байтах)
           distortion_probability: 79
           distortion_level: 4
         7:
-          capacity: 9706
-          processing_speed: 450
+          capacity: 213250000  # (в байтах)
+          processing_speed: 27500000  # (в байтах)
           distortion_probability: 8
           distortion_level: 0
         8:
-          capacity: 6657
-          processing_speed: 556
+          capacity: 832125000  # (в байтах)
+          processing_speed: 29500000  # (в байтах)
           distortion_probability: 38
           distortion_level: 3
         9:
-          capacity: 8977
-          processing_speed: 875
+          capacity: 1122125000  # (в байтах)
+          processing_speed: 23625000  # (в байтах)
           distortion_probability: 45
           distortion_level: 3
         10:
-          capacity: 1460
-          processing_speed: 792
+          capacity: 182500000  # (в байтах)
+          processing_speed: 36500000  # (в байтах)
           distortion_probability: 42
           distortion_level: 0
         11:
-          capacity: 8086
-          processing_speed: 603
+          capacity: 1010750000  # (в байтах)
+          processing_speed: 25375000  # (в байтах)
           distortion_probability: 9
           distortion_level: 4
         12:
-          capacity: 5047
-          processing_speed: 727
+          capacity: 630875000  # (в байтах)
+          processing_speed: 15875000  # (в байтах)
           distortion_probability: 84
           distortion_level: 0
         13:
-          capacity: 4488
-          processing_speed: 243
+          capacity: 561000000  # (в байтах)
+          processing_speed: 17875000  # (в байтах)
           distortion_probability: 75
           distortion_level: 4
         14:
-          capacity: 9248
-          processing_speed: 941
+          capacity: 1156000000  # (в байтах)
+          processing_speed: 5125000  # (в байтах)
           distortion_probability: 17
           distortion_level: 0
         15:
-          capacity: 6721
-          processing_speed: 160
+          capacity: 840125000  # (в байтах)
+          processing_speed: 20000000  # (в байтах)
           distortion_probability: 34
           distortion_level: 4
