@@ -52,7 +52,7 @@ def generate_pos(g: dict) -> dict:
         if (i % 2 == 1):
             if ((i + 3) % 4 == 0):
                 Y = 2 - ((i - (l_V - p) // 2) ** 2 - (
-                            l_V - p) ** 2 // 4 - 0.3) * 0.25 + 3  # или вместо 3 5*random.ranf() + 10
+                        l_V - p) ** 2 // 4 - 0.3) * 0.25 + 3  # или вместо 3 5*random.ranf() + 10
             else:
                 Y = 2 - ((i - (l_V - p) // 2) ** 2 - (l_V - p) ** 2 // 4 - 0.3) * 0.25 - 3
         else:
@@ -60,7 +60,7 @@ def generate_pos(g: dict) -> dict:
                 Y = -2 + ((i - (l_V - p) // 2) ** 2 - (l_V - p) ** 2 // 4) * 0.25 + 3
             else:
                 Y = -2 + ((i - (l_V - p) // 2) ** 2 - (
-                            l_V - p) ** 2 // 4) * 0.25 - 3  # умное распределние высот по параболе (бизигзапарабольное распределение)
+                        l_V - p) ** 2 // 4) * 0.25 - 3  # умное распределние высот по параболе (бизигзапарабольное распределение)
 
         positions.update({V[i]: [X, Y]})
 
@@ -208,6 +208,7 @@ def damerau_levenshtein_distance(s1, s2):
                 d[(i, j)] = min(d[(i, j)], d[i - 2, j - 2] + cost)  # transposition
     return d[lenstr1 - 1, lenstr2 - 1]
 
+
 def huffman_distance(s1, s2):
     """
     Смысл: сколько операций добавления или удаления символа нужно совершить, чтобы строки стали равны
@@ -267,6 +268,7 @@ def ID_random_substitution(info):
     i = random.randint(0, len(info))
     return info[0:i] + random.choice(string.printable[:-2]) + info[i + 1:]
 
+
 def information_distortion(info: str, dist_level: int = 1):
     distorted = info
     for i in range(0, random.randint(0, dist_level)):
@@ -274,6 +276,7 @@ def information_distortion(info: str, dist_level: int = 1):
                                    ID_random_deletion,
                                    ID_random_substitution])(distorted)
     return distorted
+
 
 def get_vals_from_inherited_keys(d, key):
     """
@@ -304,6 +307,7 @@ def get_vals_from_inherited_keys(d, key):
 
     return value
 
+
 def set_vals_from_inherited_keys(d, key, value):
     """
     Parameters
@@ -322,6 +326,7 @@ def set_vals_from_inherited_keys(d, key, value):
     exec('new_d["%s"] = %s' % (attrs, value))
     return new_d
 
+
 def filled_space_factor_formulae(n: float,
                                  params: dict):
     filled_space_factor_low = params['filled_space_factor_low']
@@ -338,3 +343,11 @@ def filled_space_factor_formulae(n: float,
         factor = 1 - math.exp(n - 1 / n) * (filled_space_factor_high - filled_space_factor_low)
         factor = factor if factor > filled_space_factor_plateau else filled_space_factor_plateau
     return round(factor, 4)
+
+
+def node_processing_packet_time(node, packet, packet_order):
+    if packet_order == 0:
+        packet_order = 1
+    overall_processing_speed = node.processing_speed * (1 + node.jitter_f()) * node.filled_space_factor
+    processing_time = (packet.size / overall_processing_speed) * packet_order
+    return processing_time

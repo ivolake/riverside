@@ -30,22 +30,26 @@ from general import parse_args, get_yaml
 
 if __name__ == '__main__':
     args = parse_args(sys.argv[1:])
-    config = get_yaml(args.config_path)
-    traffic_params = get_yaml(args.traffic_path)
+    model_path = r'D:\OneDrive\Documents\Python_Scripts\Networks_Science_2\models\model1.yaml'
+    model = get_yaml(model_path)
+    network_path = model['network']  # args.config_path
+    traffic_path = model['traffic']  # args.traffic_path
+    network_params = get_yaml(network_path)
+    traffic_params = get_yaml(traffic_path)
 
-    _en = '5'
+    _en = '6'
     experiment_params = {
         'name': _en,
         'reports_path': os.path.abspath(f'D:\\OneDrive\\Documents\\Научная работа\\Научная работа лето 3-4 курс 2020, осень 5 курс 2021\\Тесты\\Тест_{_en}\\')
     }
 
-    script_1(config,
-             traffic_params,
-             experiment_params)
-
-    # script_2(config,
+    # script_1(config,
     #          traffic_params,
     #          experiment_params)
+
+    script_2(network_params,
+             traffic_params,
+             experiment_params)
 
     # 1+1
     # quality_report = A.get_efforts_quality(base_traffic_report, traffic_report)

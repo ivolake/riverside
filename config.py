@@ -3,7 +3,9 @@ PROJECT_PATH = r'C:\Users\bzakh\OneDrive\Documents\Python_Scripts\Networks_Scien
 OUTPUT_PATH = PROJECT_PATH + r'\output'
 
 
-DEFAULT_CYCLE_TIME = 20
+DEFAULT_CYCLE_TIME = 0.00001
+
+
 DEFAULT_TCP_TIMEOUT = 5
 DEFAULT_TCP_ATTEMPTS_LIMIT = 0.5
 

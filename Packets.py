@@ -68,7 +68,7 @@ class BasePacket:
         Размер пакета в байтах. Пакет рассматривается как строка в формате utf-8.
         """
         # return sys.getsizeof(self._struct)
-        return len(self.__struct) * 2 # потому что в utf-8 символ занимает 2 байта.
+        return len(self.__struct) * 2  # потому что в utf-8 символ занимает 2 байта.
 
     @property
     def headings_size(self):
@@ -77,7 +77,7 @@ class BasePacket:
         -------
         Размер заголовков пакета в байтах. Пакет рассматривается как строка в формате utf-8.
         """
-        return len(self.__headings) * 2 # потому что в utf-8 символ занимает 2 байта
+        return len(self.__headings) * 2  # потому что в utf-8 символ занимает 2 байта
 
     @property
     def data_size(self):

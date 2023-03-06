@@ -153,7 +153,7 @@ class TCPStreamData:
         self.id = stream.id
         self.path = path
         self.reverse_path = reverse_path
-        self.packets_time = {packet.id: 0 for packet in stream.packets} # id - уникальный идентификатор пакета как Python-объекта
+        self.packets_time_lastalive = {packet.id: 0 for packet in stream.packets} # id - уникальный идентификатор пакета как Python-объекта
                                                                         # здесь используется id, а не pid потому, что в
                                                                         # этом списке должны находится и копии некоторых
                                                                         # пакетов. Пакет и его копия различаются только параметром _copy_num и id
@@ -167,7 +167,7 @@ class UDPStreamData:
         self.stream = stream
         self.id = stream.id
         self.packets_paths = {packet.id: paths[i % len(paths)] for i, packet in enumerate(stream.packets)}
-        self.packets_time = {packet.id: 0 for packet in stream.packets}  # id - уникальный идентификатор пакета как Python-объекта
+        self.packets_time_lastalive = {packet.id: 0 for packet in stream.packets}  # id - уникальный идентификатор пакета как Python-объекта
                                                                          # здесь используется id, а не pid потому, что в
                                                                          # этом списке должны находится и копии некоторых
                                                                          # пакетов. Пакет и его копия различаются только параметром _copy_num и id
@@ -188,7 +188,7 @@ class Operator:
         self.__streams_data.update({key: value})
 
     def __repr__(self):
-        packets = list(chain([[None if sd.stream.get_by_id(p_id) is None else sd.stream.get_by_id(p_id).id for p_id in sd.packets_time] for sd in self.__streams_data.values()]))
+        packets = list(chain([[None if sd.stream.get_by_id(p_id) is None else sd.stream.get_by_id(p_id).id for p_id in sd.packets_time_lastalive] for sd in self.__streams_data.values()]))
         return f'Operator(streams_ids={list(self.__streams_data.keys())}, packets={packets})'
 
     def keys(self):
@@ -258,7 +258,7 @@ class Operator:
         # if not self.__valid_packet(pkt):
         #     raise Exception(f'Пакет {pkt.sid}.{pkt.pid} не принадлежит ни одному потоку, содержащемуся в оперативной памяти')
         # else:
-        return self[pkt.sid].packets_time.get(pkt.id, None)
+        return self[pkt.sid].packets_time_lastalive.get(pkt.id, None)
 
     def increment_travel_time(self,
                               pkt: BasePacket,
@@ -267,8 +267,7 @@ class Operator:
         # if not self.__valid_packet(pkt):
         #     print(f'Пакет {pkt.sid}.{pkt.pid} не принадлежит ни одному потоку, содержащемуся в оперативной памяти')
         # else:
-        overall_processing_speed = current_node.processing_speed * (1 + current_node.jitter_f()) * current_node.filled_space_factor
-        self[pkt.sid].packets_time[pkt.id] += (pkt.size / overall_processing_speed) * (pkt_order + 1)
+        self[pkt.sid].packets_time[pkt.id] += adds.node_processing_packet_time(current_node, pkt, pkt_order)
 
     @staticmethod
     # TODO: Костыль, этот метод все таки должен быть в объекте вершины.

@@ -13,6 +13,7 @@ class BaseStream:
                  message: str,
                  sender: str,
                  receiver: str,
+                 delay: float = 0,
                  packet_size: int = None,
                  packet_tol: int = None,
                  special: dict = None):
@@ -24,6 +25,8 @@ class BaseStream:
         self._receiver = receiver
 
         self._special = special
+
+        self.delay = delay
 
 
 
@@ -140,8 +143,8 @@ class BaseStream:
 
 
 class TCPStream(BaseStream):
-    def __init__(self, message: str, sender: str, receiver: str, packet_size: int = None, packet_tol: int = None, special: dict = None):
-        super().__init__(message, sender, receiver, packet_size, packet_tol, special)
+    def __init__(self, message: str, sender: str, receiver: str, delay: float = 0, packet_size: int = None, packet_tol: int = None, special: dict = None):
+        super().__init__(message, sender, receiver, delay, packet_size, packet_tol, special)
 
         self.packets = []
 
@@ -178,6 +181,7 @@ class TCPStream(BaseStream):
             'sending_attempts': 0,
             'is_answer': False,
             'is_copy': False,
+            'delay': self.delay,
             'tol': self.packet_tol,
         }
 
@@ -199,14 +203,16 @@ class TCPStream(BaseStream):
             'sid': self.id,
             'pid': pkt.pid,
             # 'next_hop': 'None',
+            'delay': -1,
             'is_answer': True,
         }
         pkt = BasePacket(headings=headings, data='')
         return pkt
 
+
 class UDPStream(BaseStream):
-    def __init__(self, message: str, sender: str, receiver: str, packet_size: int = None, packet_tol: int = None, special: dict = None):
-        super().__init__(message, sender, receiver, packet_size, packet_tol, special)
+    def __init__(self, message: str, sender: str, receiver: str, delay: float = 0, packet_size: int = None, packet_tol: int = None, special: dict = None):
+        super().__init__(message, sender, receiver, delay, packet_size, packet_tol, special)
 
         self.packets = []
 
@@ -237,5 +243,6 @@ class UDPStream(BaseStream):
             'sid': self.id,
             'pid': 'None',
             # 'next_hop': 'None',
+            'delay': self.delay,
             'tol': self.packet_tol,
         }

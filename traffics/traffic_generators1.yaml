@@ -1,0 +1,31 @@
+generators:
+  "1":
+    message_paths_pool: D:\OneDrive\Documents\Python_Scripts\Networks_Science_2\messages
+    messages_count: 12000
+    senders_pool: all
+    receivers_pool: all
+    packets_size: default
+    protocols_pool: [TCP, UDP]
+    start_timeouts_pool: [0, 60]
+    special:
+      k_pool: [1, 2, 3]
+  "2":
+    message_paths_pool: D:\OneDrive\Documents\Python_Scripts\Networks_Science_2\messages
+    messages_count: 5000
+    senders_pool: all
+    receivers_pool: all
+    packets_size: default
+    protocols_pool: [TCP, UDP]
+    start_timeouts_pool: [20, 40]
+    special:
+      k_pool: [3, 4]
+  "3":
+    message_paths_pool: D:\OneDrive\Documents\Python_Scripts\Networks_Science_2\messages
+    messages_count: 8000
+    senders_pool: all
+    receivers_pool: all
+    packets_size: default
+    protocols_pool: [TCP, UDP]
+    start_timeouts_pool: [40, 70]
+    special:
+      k_pool: [1, 5]

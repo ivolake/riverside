@@ -1,5 +1,5 @@
 graph:
-  path: D:\OneDrive\Documents\Python_Scripts\Networks_Science_2\Graph_Templates\wdigraph6.txt
+  path: D:\OneDrive\Documents\Python_Scripts\Networks_Science_2\graphs\wdigraph6_1.txt
   # ^ Указывается адрес на файл с матрицей смежности файла (txt, csv)
   type: vmrk_telnet
    # ^ Тип графа.

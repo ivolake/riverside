@@ -145,7 +145,7 @@ class TrafficReport(BaseReport):
         """
         unfilled_metrics = 0
         if not self.status:
-            print('Отчет заполнен не всеми данными по трафику. Результат будет неполным.')
+            print(f'Отчет заполнен не всеми данными по трафику ({round(self.status*100, 2)}%). Результат будет неполным.')
         for sid, r in self.__reports.items():
             if r['protocol'] == 'TCP':
                 for p_time in r['received_data']['packets_time'].values():
